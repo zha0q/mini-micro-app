@@ -1,4 +1,4 @@
-import CreateApp from "./app";
+import { appInstanceMap, CreateApp } from "./app";
 
 // 自定义元素
 class MyElement extends HTMLElement {
@@ -24,14 +24,20 @@ class MyElement extends HTMLElement {
       url: this.url,
       container: this,
     });
+    console.log(appInstanceMap);
+    appInstanceMap.set(this.name, app);
   }
 
   disconnectedCallback() {
     // 元素从DOM中删除时执行，此时进行一些卸载操作
     console.log("micro-app has disconnected");
+
+    const app = appInstanceMap.get(this.name);
+    app?.unmount(this.hasAttribute("destroy"));
   }
 
   attributeChangedCallback(attr: any, oldVal: any, newVal: any) {
+    console.log("change!!!", attr, oldVal, newVal);
     // 元素属性发生变化时执行，可以获取name、url等属性的值
     // 分别记录name及url的值
     if (attr === "name" && !this.name && newVal) {

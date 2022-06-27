@@ -1,18 +1,24 @@
 <template>
   <div>
-    <micro-app name="app" url="http://localhost:3000"></micro-app>
+    <micro-app
+      v-if="appShow"
+      name="app"
+      url="http://localhost:3000"
+    ></micro-app>
+    <button
+      @click="
+        () => {
+          appShow = !appShow;
+        }
+      "
+    ></button>
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from "vue";
+<script setup lang="ts">
+import { defineComponent, onMounted, ref } from "vue";
 
-export default defineComponent({
-  name: "HelloWorld",
-  props: {
-    msg: String,
-  },
-});
+const appShow = ref(false);
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->

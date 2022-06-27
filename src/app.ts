@@ -1,6 +1,6 @@
 import loadHtml from "./source";
 
-export default class CreateApp {
+export class CreateApp {
   constructor({
     name,
     url,
@@ -48,7 +48,6 @@ export default class CreateApp {
     const cloneHtml = this.source.html.cloneNode(true);
 
     const fragment = document.createDocumentFragment();
-    console.log(cloneHtml);
     Array.from(cloneHtml.childNodes).forEach((node) => {
       fragment.appendChild(node);
     });
@@ -58,6 +57,14 @@ export default class CreateApp {
     this.source.scripts.forEach((info) => {
       (0, eval)(info.code);
     });
+    // 当前script未运行完成？部分节点未挂载，所以要setTimeout
+    // TODO: 资源地址补全不完善
+    setTimeout(() => {
+      const imgs = document.querySelectorAll("img");
+      imgs.forEach((img) => {
+        img.src = img.src.replace(window.location.origin, this.url);
+      });
+    }, 0);
 
     this.status = "mounted";
   }
@@ -65,6 +72,29 @@ export default class CreateApp {
   /**
    * 卸载应用
    * 执行关闭沙箱，清空缓存等操作
+   * @param destory 是否完全销毁，删除缓存资源
    */
-  unmount() {}
+  unmount(destroy: boolean) {
+    // 更新状态
+    this.status = "unmount";
+    // 清空容器
+    this.container = document.createElement("div");
+    if (destroy) {
+      console.log("unmount!!", this.name);
+      appInstanceMap.delete(this.name);
+    }
+  }
+}
+
+export class appInstanceMap {
+  static mp: Map<string, CreateApp> = new Map();
+  static set(name: string, app: CreateApp) {
+    this.mp.set(name, app);
+  }
+  static get(name: string) {
+    return this.mp.get(name);
+  }
+  static delete(name: string) {
+    return this.mp.delete(name);
+  }
 }
