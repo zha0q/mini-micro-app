@@ -1,8 +1,18 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import logo from "./logo.svg";
+import "./App.css";
+
+declare global {
+  interface Window {
+    globalStr: string;
+  }
+}
 
 function App() {
+  window.addEventListener("click", () => {
+    console.log("react Listener!!");
+    window.globalStr = "react";
+  });
   return (
     <div className="App">
       <header className="App-header">

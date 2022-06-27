@@ -31,7 +31,6 @@ class MyElement extends HTMLElement {
   disconnectedCallback() {
     // 元素从DOM中删除时执行，此时进行一些卸载操作
     console.log("micro-app has disconnected");
-
     const app = appInstanceMap.get(this.name);
     app?.unmount(this.hasAttribute("destroy"));
   }

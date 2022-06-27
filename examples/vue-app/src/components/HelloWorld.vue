@@ -19,6 +19,11 @@
 import { defineComponent, onMounted, ref } from "vue";
 
 const appShow = ref(false);
+
+window.addEventListener("click", () => {
+  console.log("vue click!!");
+  window.globalStr = "vue!!";
+});
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
