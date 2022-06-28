@@ -24,7 +24,6 @@ class MyElement extends HTMLElement {
       url: this.url,
       container: this,
     });
-    console.log(appInstanceMap);
     appInstanceMap.set(this.name, app);
   }
 

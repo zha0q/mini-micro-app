@@ -1,10 +1,6 @@
 <template>
-  <div>
-    <micro-app
-      v-if="appShow"
-      name="app"
-      url="http://localhost:3000"
-    ></micro-app>
+  <div className="App">
+    啦啦啦啦啦
     <button
       @click="
         () => {
@@ -12,6 +8,11 @@
         }
       "
     ></button>
+    <micro-app
+      v-if="appShow"
+      name="app"
+      url="http://localhost:3000"
+    ></micro-app>
   </div>
 </template>
 
@@ -27,19 +28,12 @@ window.addEventListener("click", () => {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
-h3 {
-  margin: 40px 0 0;
+<style>
+.App {
+  color: palegreen;
 }
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
+button {
+  height: 100px;
+  width: 100px;
 }
 </style>
