@@ -12,7 +12,7 @@ export default function scopedCSS(
   appName: string
 ) {
   // 前缀
-  const prefix = `micro-app[name=${appName}]`;
+  const prefix = `micro-app[app-name=${appName}]`;
 
   console.log(styleElement, appName);
 
@@ -25,7 +25,7 @@ export default function scopedCSS(
       templateStyle.sheet.disabled = true;
     }
   }
-  // ???? 为什么要在 模版元素中走一遭
+  // ???? 为什么要在 模版元素中走一遍：暂时保存styleSheet，格式化后直接赋给styleElement
   if (styleElement.textContent) {
     // 将元素的内容赋值给模版元素
     templateStyle.textContent = styleElement.textContent;
@@ -37,7 +37,7 @@ export default function scopedCSS(
     // 清空模版style内容
     templateStyle.textContent = "";
   } else {
-    // 监听动态添加内容的style元素
+    // 监听动态添加内容的style元素 ???
     const observer = new MutationObserver(function () {
       // 断开监听
       observer.disconnect();
@@ -56,7 +56,7 @@ export default function scopedCSS(
 // /src/scopedcss.js
 
 /**
- * 依次处理每个cssRule
+ * 依次处理每个cssRule 格式化style
  * @param rules cssRule
  * @param prefix 前缀
  */
@@ -79,7 +79,7 @@ function scopedRule(rules: any, prefix: string) {
         break;
     }
   }
-  console.log("scopedRule");
+  console.log("scopedRule", result);
 
   return result;
 }

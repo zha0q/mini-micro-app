@@ -4,7 +4,7 @@ import { appInstanceMap, CreateApp } from "./app";
 class MyElement extends HTMLElement {
   // 声明需要监听的属性名，只有这些属性变化时才会触发attributeChangedCallback
   static get observedAttributes() {
-    return ["name", "url"];
+    return ["app-name", "url", "aaa"];
   }
 
   name: "";
@@ -13,6 +13,7 @@ class MyElement extends HTMLElement {
     super();
     this.name = name;
     this.url = url;
+    
   }
 
   connectedCallback() {
@@ -38,7 +39,7 @@ class MyElement extends HTMLElement {
     console.log("change!!!", attr, oldVal, newVal);
     // 元素属性发生变化时执行，可以获取name、url等属性的值
     // 分别记录name及url的值
-    if (attr === "name" && !this.name && newVal) {
+    if (attr === "app-name" && !this.name && newVal) {
       this.name = newVal;
     } else if (attr === "url" && !this.url && newVal) {
       this.url = newVal;

@@ -1,13 +1,15 @@
+import { EventCenterForMicroApp } from "./data";
+
 export class Sandbox {
   active = false; // 运行状态
-  microWindow = {}; // 代理对象
+  microWindow: any = {}; // 代理对象
   injectedKey = new Set(); // 新添加属性，卸载时清空
 
   proxyWindow: any = null;
 
   releaseEffect: any = null;
 
-  constructor() {
+  constructor(appName: string) {
     this.proxyWindow = new Proxy(this.microWindow, {
       get: (target, key) => {
         if (Reflect.has(target, key)) {
@@ -47,6 +49,8 @@ export class Sandbox {
     });
 
     this.releaseEffect = effect(this.microWindow);
+
+    this.microWindow.microApp = new EventCenterForMicroApp(appName);
   }
 
   start() {
@@ -66,6 +70,8 @@ export class Sandbox {
       this.injectedKey.clear();
 
       this.releaseEffect();
+
+      this.microWindow.microApp.clearDataListener();
     }
   }
 

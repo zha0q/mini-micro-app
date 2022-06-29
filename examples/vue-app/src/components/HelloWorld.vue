@@ -10,9 +10,11 @@
     ></button>
     <micro-app
       v-if="appShow"
-      name="app"
+      app-name="app"
       url="http://localhost:3000"
-    ></micro-app>
+      :data="data"
+      @datachange="handleDataChange"
+    />
   </div>
 </template>
 
@@ -25,6 +27,14 @@ window.addEventListener("click", () => {
   console.log("vue click!!");
   window.globalStr = "vue!!";
 });
+
+const data = {
+  xixi: "1234",
+};
+
+const handleDataChange = (v: any) => {
+  console.log(v);
+};
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
@@ -35,5 +45,9 @@ window.addEventListener("click", () => {
 button {
   height: 100px;
   width: 100px;
+}
+
+micro-app[aaa="113"] {
+  color: royalblue;
 }
 </style>

@@ -74,7 +74,6 @@ function extractSourceDom(parent: any, app: any) {
       // 删除原有元素
       parent.removeChild(dom);
     } else if (dom instanceof HTMLStyleElement) {
-      console.log(dom)
       // 执行样式隔离
       scopedCSS(dom, app.name);
     } else if (dom instanceof HTMLScriptElement) {
@@ -123,6 +122,7 @@ export function fetchLinksFromHtml(app: any, microAppHead: any, htmlDom: any) {
         // 拿到css资源后放入style元素并插入到micro-app-head中
         const link2Style = document.createElement("style");
         link2Style.textContent = code;
+        console.log("styleLink!!!", link2Style);
         scopedCSS(link2Style, app.name);
         microAppHead.appendChild(link2Style);
 

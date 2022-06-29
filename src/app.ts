@@ -17,7 +17,7 @@ export class CreateApp {
     this.status = "loading";
     loadHtml(this);
 
-    this.sandbox = new Sandbox();
+    this.sandbox = new Sandbox(this.name);
   }
 
   name = "";

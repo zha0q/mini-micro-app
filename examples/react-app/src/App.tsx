@@ -5,6 +5,7 @@ import "./App.css";
 declare global {
   interface Window {
     globalStr: string;
+    microApp: any;
   }
 }
 
@@ -13,6 +14,11 @@ function App() {
     console.log("react Listener!!");
     window.globalStr = "react";
   });
+
+  window.microApp.dispatch({ data: "haha" });
+
+  window.microApp.addDataListener((v: any) => console.log("子接收到", v));
+
   return (
     <div className="App">
       <header className="App-header">

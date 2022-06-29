@@ -33,10 +33,22 @@
 8. 沙箱
 
 - 解决问题：1.全局变量冲突 2.全局监听事件解绑
-JS沙箱的核心在于修改js作用域和重写window
-
+  JS 沙箱的核心在于修改 js 作用域和重写 window
 
 9. 样式隔离
-- 我们上面提到过，style元素插入到文档后会创建css样式表，但有些style元素(比如动态创建的style)在执行样式隔离时还没插入到文档中，此时样式表还没生成。所以我们需要创建一个模版style元素，它用于处理这种特殊情况，模版style只作为格式化工具，不会对页面产生影响。
 
-- 还有一种情况需要特殊处理：style元素被插入到文档中后再添加样式内容。这种情况常见于开发环境，通过style-loader插件创建的style元素。对于这种情况可以通过MutationObserver监听style元素的变化，当style插入新的样式时再进行隔离处理。
+- 我们上面提到过，style 元素插入到文档后会创建 css 样式表，但有些 style 元素(比如动态创建的 style)在执行样式隔离时还没插入到文档中，此时样式表还没生成。所以我们需要创建一个模版 style 元素，它用于处理这种特殊情况，模版 style 只作为格式化工具，不会对页面产生影响。
+
+- 还有一种情况需要特殊处理：style 元素被插入到文档中后再添加样式内容。这种情况常见于开发环境，通过 style-loader 插件创建的 style 元素。对于这种情况可以通过 MutationObserver 监听 style 元素的变化，当 style 插入新的样式时再进行隔离处理。
+
+- bug：之前捕捉不到 style link，修改为 prod 环境才有 style link
+- bug：属性选择器不生效
+  ```javascript
+  if (key !== "value") hostPatchProp(el, key, null, props[key]);
+
+  isOn(key) // => 匹配是否为 监听器。。（一堆特判断）
+
+  patchDOMProp
+
+  el[key] = value
+  ```
