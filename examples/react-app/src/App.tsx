@@ -1,6 +1,9 @@
 import React from "react";
 import logo from "./logo.svg";
 import "./App.css";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { Logo } from "./pages/Logo";
+import { Home } from "./pages/Home";
 
 declare global {
   interface Window {
@@ -15,26 +18,19 @@ function App() {
     window.globalStr = "react";
   });
 
-  window.microApp.dispatch({ data: "haha" });
+  if (window.microApp) {
+    window.microApp.dispatch({ data: "haha" });
 
-  window.microApp.addDataListener((v: any) => console.log("子接收到", v));
-
+    window.microApp.addDataListener((v: any) => console.log("子接收到", v));
+  }
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <Router>
+        <Routes>
+          <Route path="/logo" element={<Logo />} />
+          <Route path="/" element={<Home />} />
+        </Routes>
+      </Router>
     </div>
   );
 }
