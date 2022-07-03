@@ -19,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineComponent, onMounted, ref } from "vue";
+import { defineComponent, onMounted, reactive, ref } from "vue";
 
 const appShow = ref(false);
 
@@ -28,12 +28,14 @@ window.addEventListener("click", () => {
   window.globalStr = "vue!!";
 });
 
-const data = {
-  xixi: "1234",
-};
+const data = ref({});
+
+setTimeout(() => {
+  data.value = { name: "xixi" };
+}, 3000);
 
 const handleDataChange = (v: any) => {
-  console.log(v);
+  console.log("父组件接受到的数据", v);
 };
 </script>
 

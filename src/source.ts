@@ -95,8 +95,6 @@ function extractSourceDom(parent: any, app: any) {
       }
 
       parent.removeChild(dom);
-    } else if (dom instanceof HTMLStyleElement) {
-      // 进行样式隔离
     }
   }
 }

@@ -39,6 +39,7 @@ export default function scopedCSS(
   } else {
     // 监听动态添加内容的style元素 ???
     const observer = new MutationObserver(function () {
+      console.log('observer!!!', observer);
       // 断开监听
       observer.disconnect();
       // 格式化规则，并将格式化后的规则赋值给style元素

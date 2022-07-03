@@ -14,7 +14,10 @@ const MiniMicroApp = {
 const rawSetAttribute = Element.prototype.setAttribute;
 
 // 重写setAttribute
-Element.prototype.setAttribute = function setAttribute(key: string, value: any) {
+Element.prototype.setAttribute = function setAttribute(
+  key: string,
+  value: any
+) {
   // 目标为micro-app标签且属性名称为data时进行处理
   if (/^micro-app/i.test(this.tagName) && key === "data") {
     if (toString.call(value) === "[object Object]") {
@@ -29,7 +32,8 @@ Element.prototype.setAttribute = function setAttribute(key: string, value: any) 
         }
       });
       // 发送数据
-      BaseAppData.setData(this.getAttribute("name"), cloneValue);
+      console.log(cloneValue);
+      BaseAppData.setData(this.getAttribute("app-name"), cloneValue);
     }
   } else {
     rawSetAttribute.call(this, key, value);

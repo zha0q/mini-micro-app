@@ -43,12 +43,30 @@
 
 - bug：之前捕捉不到 style link，修改为 prod 环境才有 style link
 - bug：属性选择器不生效
+
   ```javascript
   if (key !== "value") hostPatchProp(el, key, null, props[key]);
 
-  isOn(key) // => 匹配是否为 监听器。。（一堆特判断）
+  isOn(key); // => 匹配是否为 监听器。。（一堆特判）
 
-  patchDOMProp
+  patchDOMProp;
 
-  el[key] = value
+  el[key] = value;
   ```
+
+  结束后进入 CustomElement 的 connectedCallback
+
+  大概是 vue 将 name、url 处理为了 property 元素对象属性，而非 attribute 元素标签属性
+
+10. 数据传递
+
+    - 使用发布订阅模式，分为总处理中心、基座处理中心、microApp 处理中心
+    - 基座和 microApp 处理为 eventCenter 的封装
+    - 基座向组件传递数据的方式为属性分配
+    - 属性分配与响应式：数据更新后 attribute 更新，触发
+    - 基座向组件传递数据需要 响应式数据 延时赋值，因为初始化时 microApp 的事件中心还没有初始化，发送数据没有用。
+
+11. 待解决的问题：
+
+- dev 环境时样式隔离
+- 路由

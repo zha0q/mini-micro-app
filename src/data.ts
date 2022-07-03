@@ -16,7 +16,7 @@ class EventCenter {
   off(name: string, f?: void | undefined) {
     const eventInfo = this.eventList.get(name);
     if (eventInfo) {
-      if (f === void 0) {
+    if (f !== void 0) {
         eventInfo.callback.delete(f);
       } else {
         eventInfo.callback = new Set();
@@ -70,6 +70,7 @@ export class EventCenterForMicroApp {
   }
   dispatch(data: any) {
     const app = appInstanceMap.get(this.appName as string);
+    // 向micro-app发送事件
     if (app?.container) {
       const event = new CustomEvent("datachange", {
         detail: data,
