@@ -1,10 +1,12 @@
+import { useHistory } from "react-router-dom";
 import logo from "../logo.svg";
 export const Logo = () => {
+  const history = useHistory();
   return (
     <>
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
-        <p>
+        <p onClick={() => history.push('/')}>
           Edit <code>src/App.tsx</code> and save to reload.
         </p>
         <a

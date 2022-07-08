@@ -1,4 +1,6 @@
-import { EventCenterForMicroApp } from "./data";
+import { EventCenterForMicroApp } from "../data";
+import { fetchSource } from "../utils";
+import LocationGenerator from "./generator/location";
 
 export class Sandbox {
   active = false; // 运行状态
@@ -9,7 +11,15 @@ export class Sandbox {
 
   releaseEffect: any = null;
 
-  constructor(appName: string) {
+  constructor(appName: string, url: string) {
+    const locationGenerator = new LocationGenerator({
+      sandbox: this,
+      name: appName,
+      src: url,
+      routeSyncMode: true,
+    });
+    locationGenerator.run();
+
     this.proxyWindow = new Proxy(this.microWindow, {
       get: (target, key) => {
         if (Reflect.has(target, key)) {
@@ -18,7 +28,7 @@ export class Sandbox {
         // 否则到window上取
         const rawValue = Reflect.get(window, key);
         // 如果值为函数，需要绑定window，比如console、alert
-
+        // console.log(key, rawValue);
         if (typeof rawValue === "function") {
           const valueStr = rawValue.toString();
           // 排除构造函数
@@ -84,6 +94,8 @@ export class Sandbox {
 // 记录addEventListener、removeEventListener原生方法
 const rawWindowAddEventListener = window.addEventListener;
 const rawWindowRemoveEventListener = window.removeEventListener;
+const rawWindowHistory = window.history;
+const rawWindowLocation = window.location;
 
 /**
  * 重写全局事件的监听和解绑
@@ -125,6 +137,26 @@ export function effect(microWindow: any) {
     // 执行原生解绑函数
     return rawWindowRemoveEventListener.call(window, type, listener, options);
   };
+
+  microWindow.dispatchEvent = function (e: any) {
+    const listenerList = eventListenerMap.get(e.type);
+    if (listenerList) {
+      for (const listener of listenerList) {
+        console.log(listener);
+        listener.call(this.sandbox.proxyWindow);
+      }
+    }
+  };
+
+  // const frame = document.createElement("iframe");
+  // document.body.appendChild(frame);
+  // frame.style.display = "none";
+
+  microWindow.location = microWindow.LOCATION_PROXY;
+
+  // microWindow.history = frame.contentWindow?.history;
+  // microWindow.location = frame.contentWindow?.location;
+  // console.log(microWindow.history);
 
   // 清空残余事件
   return () => {

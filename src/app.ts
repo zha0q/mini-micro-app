@@ -1,5 +1,5 @@
 import loadHtml from "./source";
-import { effect, Sandbox } from "./sandbox";
+import { effect, Sandbox } from "./mirror/sandbox";
 
 export class CreateApp {
   constructor({
@@ -17,7 +17,7 @@ export class CreateApp {
     this.status = "loading";
     loadHtml(this);
 
-    this.sandbox = new Sandbox(this.name);
+    this.sandbox = new Sandbox(this.name, url);
   }
 
   name = "";
@@ -59,24 +59,12 @@ export class CreateApp {
     this.container.appendChild(fragment);
 
     this.sandbox.start();
-    // 这里绑定window不明白！！！！！！！！！！！！！！！！！！！！！！！！
-    // 这里绑定window不明白！！！！！！！！！！！！！！！！！！！！！！！！
-    // 这里绑定window不明白！！！！！！！！！！！！！！！！！！！！！！！！
-    // 这里绑定window不明白！！！！！！！！！！！！！！！！！！！！！！！！
-    // 这里绑定window不明白！！！！！！！！！！！！！！！！！！！！！！！！
-    // 这里绑定window不明白！！！！！！！！！！！！！！！！！！！！！！！！
-    // 这里绑定window不明白！！！！！！！！！！！！！！！！！！！！！！！！
+    // 这里绑定window不明
     this.source.scripts.forEach((info) => {
       (0, eval)(this.sandbox.bindScope(info.code));
     });
     // 当前script未运行完成？部分节点未挂载，所以要setTimeout
     // TODO: 资源地址补全不完善
-    setTimeout(() => {
-      const imgs = document.querySelectorAll("img");
-      imgs.forEach((img) => {
-        img.src = img.src.replace(window.location.origin, this.url);
-      });
-    }, 0);
 
     this.status = "mounted";
   }

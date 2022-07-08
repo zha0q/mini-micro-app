@@ -10,6 +10,12 @@ const MiniMicroApp = {
   },
 };
 
+// const rawHistory = window.history;
+// window.history.pushState = function (...v) {
+//   console.log(...v);
+//   rawHistory.pushState(...v);
+// };
+
 // 记录原生方法
 const rawSetAttribute = Element.prototype.setAttribute;
 

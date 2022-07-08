@@ -34,6 +34,10 @@
 
 - 解决问题：1.全局变量冲突 2.全局监听事件解绑
   JS 沙箱的核心在于修改 js 作用域和重写 window
+- eval 执行
+  直接调用时使用本地作用域，间接调用`(0, eval)`其工作在全局作用域之下
+  eval 缺点：慢，因为调用了 js 解释器、第三方代码可以看到 eval 调用时的作用域，相似的`window.Function`就不容易被攻击
+  `with(expression){ statement }`绑定命名空间 using namespace;容易造成编译器难以查找变量
 
 9. 样式隔离
 
@@ -68,5 +72,50 @@
 
 11. 待解决的问题：
 
-- dev 环境时样式隔离
 - 路由
+  无法在 window 上直接监听到路由变化，应该是 react-router 重写了 Location 绑到了 window 上
+  浏览器原生只实现了 onpopstate 的监听，意思只有当浏览器的前进后退，或者时间编程的方式 history.go()，history.back()，history.forward() 才会触发 popstate 事件，而 history.pushState, history.replaceState 没有事件触发。现在我们来重写这两个方法 让他们能触发对应的事件。
+  navigate(-1)// PopStateEvent
+  pushState 不经过 history
+
+  reactRouter 在初始化的时候在 History 保存了 window.history 的地址，所以后面即使绑定了作用域为为 window.proxyWindow，也无法拦截路由导航。。
+  解决：增加由基座下发的 BASEROUTE
+
+  history 只会在初始化的时候被 Proxy 捕捉到，后面切换路由捕捉不到
+
+  实际开发中，我们几乎不会使用无 URL 变化的 pushState。这是因为我们通常希望把页面状态暴露给用户，以便用户能看到（了解当前状态），能输入（影响当前状态）
+
+  路由状态是切换页面的副作用？？？
+
+- 资源路径补全（现在只有 images)
+
+12. bug
+
+- microapp 加载内容管理时抛出错误：eval 执行的时候抛出
+```html
+<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"/><link rel=\"icon\" href=\"/favicon.ico\"/><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/><meta name=\"theme-color\" content=\"#000000\"/><meta name=\"description\" content=\"Web site created using create-react-app\"/><link rel=\"apple-touch-icon\" href=\"/logo192.png\"/><link rel=\"manifest\" href=\"/manifest.json\"/><title>React App</title><script defer=\"defer\" src=\"/static/js/main.bdd29dcd.js\"></script><link href=\"/static/css/main.1e2ec299.css\" rel=\"stylesheet\"></head><body><noscript>You need to enable JavaScript to run this app.</noscript><div id=\"root\"></div></body></html>"
+```
+
+**替换资源问题**
+图片和字体：小一些的使用 url-loader 打包成 base64,大一些的使用 file-loader，用 `config.module.rule(images).options({limit: 4096})`
+
+- 之前配置 prod 环境时 css 资源加载有问题？？？突然好了
+- Home scroll 变大变小？？？？
+
+13. 路由
+
+- 使用 iframe 代理 window 中的 api 来控制路由，根据 HTML 的规范 这个 URL 用了 `about:blank` 一定保证保证同域，也不会发生资源加载，但是会发生关联的 和 这个 iframe 中关联的 history 不能被操作，这个时候路由的变换只能变成 hash 模式。当然也可`src=origin`，但很明显会浪费资源
+- 路由不仅要代理 history 还要代理 location,哈希路由初始化时就要用到location
+- microApp中的location没有进行沙箱代理
+- rameapp可以设置路由是否同步，意味着浏览器的刷新前进后退都可以作用到子应用上
+- rameapp 同步模式：先获取url的该子应用的查询参数，将其格式`encodeURIComponent`后的参数传入进去再设置url。`url.searchParams`
+- rameapp 异步模式：将href存在storage里面，这样就不会响应路由变化了
+
+
+14. TODO：子应用保活模式
+    TODO：弹窗渲染到主应用---shadowDOM？）
+
+15. bug: 拦截location之后，处理完子路由加入到参数中后replace会触发路由变化，这个时候就需要代理set
+
+16. bug: hash路由现在的问题，现在可以子应用来触发其自身路由变化同时改变路由，但是路由的变化不能反映到子应用变化，？可以通过创建空iframe的window，将其绑定到？？？
+？通过绑定window.location当hashchange出发的时候》？

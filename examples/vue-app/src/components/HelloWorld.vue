@@ -8,6 +8,17 @@
         }
       "
     ></button>
+
+    <button
+      @click="
+        () => {
+          router.push({ path: '/title' });
+        }
+      "
+    >
+      here
+    </button>
+
     <micro-app
       v-if="appShow"
       app-name="app"
@@ -20,8 +31,12 @@
 
 <script setup lang="ts">
 import { defineComponent, onMounted, reactive, ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
 
 const appShow = ref(false);
+
+const router = useRouter();
+const route = useRoute();
 
 window.addEventListener("click", () => {
   console.log("vue click!!");

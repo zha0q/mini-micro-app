@@ -157,6 +157,7 @@ export function fetchScriptsFromHtml(app: any, htmlDom: any) {
       for (let i = 0; i < res.length; i++) {
         const code = res[i];
         // 将代码放入缓存，再次渲染时可以从缓存中获取
+
         scriptEntries[i][1].code = code;
       }
 
@@ -165,5 +166,8 @@ export function fetchScriptsFromHtml(app: any, htmlDom: any) {
     })
     .catch((e) => {
       console.error("加载js出错", e);
+      // 处理完成后执行onLoad方法
+      console.log(htmlDom);
+      app.onLoad(htmlDom);
     });
 }
