@@ -1,5 +1,7 @@
 import { getURL, setRouteURL, setRouteURLPart, toAbsoluteURL } from "./utils";
 
+let flag = false;
+
 const PART_OF_URL = [
   "href",
   "origin",
@@ -31,29 +33,28 @@ export default class LocationGenerator {
     const { sandbox, name, src, routeSyncMode } = this;
     sandbox.microWindow.LOCATION_PROXY = new Proxy({} as any, {
       get: (obj, prop: any) => {
+        console.log(prop);
         const innerURL: any = getURL(name, src);
 
         if (typeof prop === "string" && PART_OF_URL.includes(prop)) {
           return innerURL[prop];
         }
 
-        // 判断是否为hash路由下组建的初始化触发的replace
-        // 是的话设置一下hash触发setter进行子应用路由初始化
-        let flag = false;
-        if (prop === "replace" && !flag) {
-          console.log("first replace");
-          flag = true;
-          return () =>
-            Reflect.set(sandbox.microWindow.LOCATION_PROXY, "hash", "");
-        }
-
         switch (prop) {
+          // replace 和 assign 的处理
           case "replace":
           case "assign":
             return function (url: string) {
               const absoluteURL = toAbsoluteURL(url, src);
               const newURL = setRouteURL(name, absoluteURL.href);
-              console.log(location, prop, newURL.href);
+
+              // 判断是否为hash路由下组建的初始化触发的replace
+              // 是的话设置一下hash触发setter进行子应用路由初始化
+              if (prop === "replace" && !flag) {
+                flag = true;
+                history.pushState({}, "", newURL.href);
+                return;
+              }
 
               return (location as any)[prop as string](newURL.href);
             };
@@ -65,7 +66,7 @@ export default class LocationGenerator {
       },
 
       set: (obj, prop, value) => {
-        // hash模式时会通过修改hash然后replace来修改路由
+        // hash模式时会通过修改hash然后replace来修改路由!!!
         if (prop === "hash") {
           console.log(name);
           // 传入的是对象，要把参数名附上
@@ -77,15 +78,30 @@ export default class LocationGenerator {
           });
 
           history.pushState({}, "", newURL.href);
+          console.log(history.state);
 
-          const newEvent = new HashChangeEvent("hashchange");
-          sandbox.microWindow.dispatchEvent(newEvent);
+          // const newEvent = new HashChangeEvent("hashchange");
+          // sandbox.proxyWindow.dispatchEvent(newEvent);
 
           return true;
         }
-        console.log("#213123321312");
-        return obj[prop];
+        if (PART_OF_URL.includes(prop as string)) {
+          const newURL = setRouteURLPart({
+            name,
+            base: src,
+            partName: prop,
+            partValue: value,
+            mode: routeSyncMode,
+          });
+          location.href = newURL.href;
+
+          console.log("newxxx", prop);
+        }
+
+        obj[prop] = value;
+        return true;
       },
+      has: (obj, prop) => prop in location,
     });
   }
 }

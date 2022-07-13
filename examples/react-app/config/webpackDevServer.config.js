@@ -38,8 +38,8 @@ module.exports = function (proxy, allowedHost) {
     allowedHosts: disableFirewall ? 'all' : [allowedHost],
     headers: {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': '*',
-      'Access-Control-Allow-Headers': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+      'Access-Control-Allow-Headers': 'X-Requested-With, content-type, Authorization'
     },
     // Enable gzip compression of generated files.
     compress: true,

@@ -108,7 +108,7 @@
 - 路由不仅要代理 history 还要代理 location,哈希路由初始化时就要用到location
 - microApp中的location没有进行沙箱代理
 - rameapp可以设置路由是否同步，意味着浏览器的刷新前进后退都可以作用到子应用上
-- rameapp 同步模式：先获取url的该子应用的查询参数，将其格式`encodeURIComponent`后的参数传入进去再设置url。`url.searchParams`
+- rameapp 同步模式：先获取url的该子应用的查询参数，将其格式`encodeURIComponent`后的参数传入进去再设置url并用pushState修改这样就不会触发路由修改。`url.searchParams`
 - rameapp 异步模式：将href存在storage里面，这样就不会响应路由变化了
 
 
@@ -119,3 +119,5 @@
 
 16. bug: hash路由现在的问题，现在可以子应用来触发其自身路由变化同时改变路由，但是路由的变化不能反映到子应用变化，？可以通过创建空iframe的window，将其绑定到？？？
 ？通过绑定window.location当hashchange出发的时候》？
+
+17. bug: 使用history路由但是却没有调用pushstate，原因---react-router库会在初始化时调用history.has(pushstate)，如果无的话就设置href来代替其，所以要重写has方法

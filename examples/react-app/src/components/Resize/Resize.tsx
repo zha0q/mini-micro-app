@@ -1,0 +1,3 @@
+export const Resize = () => {
+  return <></>;
+};

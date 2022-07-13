@@ -1,5 +1,6 @@
 import { EventCenterForMicroApp } from "../data";
 import { fetchSource } from "../utils";
+import HistoryGenerator from "./generator/history";
 import LocationGenerator from "./generator/location";
 
 export class Sandbox {
@@ -19,6 +20,13 @@ export class Sandbox {
       routeSyncMode: true,
     });
     locationGenerator.run();
+    const historyGenerator = new HistoryGenerator({
+      sandbox: this,
+      name: appName,
+      src: url,
+      routeSyncMode: true,
+    });
+    historyGenerator.run();
 
     this.proxyWindow = new Proxy(this.microWindow, {
       get: (target, key) => {
@@ -111,6 +119,12 @@ export function effect(microWindow: any) {
     listener: any,
     options: any
   ) {
+    if (type === "hashchange") {
+      window.addEventListener("popstate", () => {
+        listener();
+      });
+    }
+
     const listenerList = eventListenerMap.get(type);
     // 当前事件非第一次监听，则添加缓存
     if (listenerList) {
@@ -142,8 +156,9 @@ export function effect(microWindow: any) {
     const listenerList = eventListenerMap.get(e.type);
     if (listenerList) {
       for (const listener of listenerList) {
-        console.log(listener);
-        listener.call(this.sandbox.proxyWindow);
+        console.log(microWindow);
+        console.log(e.type, listener);
+        listener();
       }
     }
   };
@@ -153,6 +168,7 @@ export function effect(microWindow: any) {
   // frame.style.display = "none";
 
   microWindow.location = microWindow.LOCATION_PROXY;
+  microWindow.history = microWindow.HISTORY_PROXY;
 
   // microWindow.history = frame.contentWindow?.history;
   // microWindow.location = frame.contentWindow?.location;

@@ -52,8 +52,12 @@ export function setRouteURLPart(options: any) {
     miniUrl = new URL(innerHref);
   }
 
-  (miniUrl as any)[partName] = partValue;
-  console.log(miniUrl, partName, partValue)
+  try {
+    (miniUrl as any)[partName] = partValue;
+  } catch {
+    (miniUrl as any)[partName] = `${base}${partValue}`;
+  }
+  console.log(miniUrl, partName, partValue);
   innerRouterObj[name] = encodeURIComponent(miniUrl.href);
   url.searchParams.set(MINI_APP_ROUTE, JSON.stringify(innerRouterObj));
 
