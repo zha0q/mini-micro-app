@@ -143,6 +143,7 @@ export default class BinarySearchTree<T> {
 
   // 删除节点函数
   remove(key: T): void {
+    console.log(key);
     this.removeNode(<Node<T>>this.root, key);
   }
 

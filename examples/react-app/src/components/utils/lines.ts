@@ -1,24 +1,7 @@
-import { RedBlackNode } from "./Node";
-import RedBlackTree from "./RedBlackTree";
+import { RedBlackNode } from "./RedBlackTree/Node";
+import RedBlackTree from "./RedBlackTree/RedBlackTree";
 
-type LineType = "H" | "V";
-
-type Box = {
-  id: string;
-  vt: Line;
-  vm: Line;
-  vb: Line;
-  hl: Line;
-  hm: Line;
-  hr: Line;
-  instance: HTMLElement;
-};
-
-type Line = {
-  pos: number;
-  type: LineType;
-  box: Box | null;
-};
+import { Line, Box, LineType } from "./index.d";
 
 export default class Lines {
   vLines: RedBlackTree<number>;
@@ -57,7 +40,9 @@ export default class Lines {
     switch (line.type) {
       case "V":
         const vt: any = this.vMap.get(line.pos);
-        vt.splice(vt.findIndex(line), 1);
+        const idx = vt.findIndex((i: any) => i.box === line.box);
+        vt.splice(idx, 1);
+        console.log(vt);
         if (vt.length === 0) {
           this.vLines.remove(line.pos);
           this.vMap.delete(line.pos);
@@ -65,19 +50,23 @@ export default class Lines {
         break;
       case "H":
         const ht: any = this.hMap.get(line.pos);
-        ht.splice(ht.findIndex(line), 1);
+        ht.splice(
+          ht.findIndex((i: any) => i.pos === line.pos),
+          1
+        );
         if (ht.length === 0) {
           this.hLines.remove(line.pos);
           this.hMap.delete(line.pos);
         }
         break;
     }
+    line.instance.parentNode?.removeChild(line.instance);
   }
 
   search(line: Line, dis: number) {
     switch (line.type) {
       case "V":
-        const vt: any = this.vMap.get(line.pos);
+        const vt: any = this.vMap.has(line.pos) ? this.vMap.get(line.pos) : [];
         let vtl: any = [];
         let vtr: any = [];
         const nodeV: any = {
@@ -97,9 +86,10 @@ export default class Lines {
         if (nodeV.right && nodeV.right - line.pos <= dis) {
           vtr = this.vMap.get(nodeV.right);
         }
+        // console.log(vt, vtl, vtr, nodeV, this.vMap, this.vLines);
         return vt.concat(vtl, vtr);
       case "H":
-        const ht: any = this.hMap.get(line.pos);
+        const ht: any = this.hMap.has(line.pos) ? this.hMap.get(line.pos) : [];
         let htl: any = [];
         let htr: any = [];
         const nodeH: any = {
@@ -113,14 +103,28 @@ export default class Lines {
             nodeH.right = v;
           }
         });
-        console.log(nodeH);
+        // console.log(nodeH, this.hMap, this.hLines);
         if (nodeH.left && line.pos - nodeH.left <= dis) {
           htl = this.hMap.get(nodeH.left);
         }
         if (nodeH.right && nodeH.right - line.pos <= dis) {
           htr = this.hMap.get(nodeH.right);
         }
+        // console.log(htl, htr);
         return ht.concat(htl, htr);
     }
+  }
+
+  disappear() {
+    Array.from(this.vMap.keys()).forEach((k) => {
+      this.vMap.get(k)?.forEach((line) => {
+        line.instance.style.display = "none";
+      });
+    });
+    Array.from(this.hMap.keys()).forEach((k) => {
+      this.hMap.get(k)?.forEach((line) => {
+        line.instance.style.display = "none";
+      });
+    });
   }
 }

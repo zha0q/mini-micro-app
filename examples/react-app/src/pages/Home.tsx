@@ -2,7 +2,7 @@ import { useHistory } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import logo from "../logo.svg";
 import { Rnd } from "react-rnd";
-import Resize from "../components/utils/resize";
+import { Rndd, Bak } from "../components/utils";
 
 const getTranslateValue = (s: any) => {
   const reg = s.match(/translate\((.*?)\)/);
@@ -17,10 +17,28 @@ export const Home = () => {
   const [y, setY] = useState(0);
 
   const newResize = useRef<any>(null);
+  const newResize2 = useRef<any>(null);
+  const bak = useRef<any>(null);
 
   useEffect(() => {
     if (!newResize.current) {
-      newResize.current = new Resize(document.getElementById("xixi"));
+      bak.current = new Bak(document.getElementById("bak") as HTMLElement);
+      newResize.current = new Rndd(
+        document.getElementById("xixi") as HTMLElement,
+        bak.current,
+        {
+          dragable: true,
+          resizable: true,
+        }
+      );
+      newResize2.current = new Rndd(
+        document.getElementById("haha") as HTMLElement,
+        bak.current,
+        {
+          dragable: true,
+          resizable: true,
+        }
+      );
     }
   }, []);
 
@@ -35,25 +53,15 @@ export const Home = () => {
           }}
         />
       </div>
-      <Rnd
-        style={{ border: "1px solid" }}
-        size={{
-          width: width,
-          height: height,
-        }}
-        position={{ x, y }}
-        onDragStop={(e, data) => {
-          setX(data.x);
-          setY(data.y);
-        }}
-        onResizeStop={(e, direction, ref, delta, position) => {
-          setWidth(parseInt(ref.style.width));
-          setHeight(parseInt(ref.style.height));
-          setX(position.x);
-          setY(position.y);
-        }}
-      >
-        <div>
+      <div style={{ width: "900px", height: "900px", position: "relative" }}>
+        <div
+          id="bak"
+          style={{ height: "900px", width: "900px", position: "absolute" }}
+        ></div>
+        <div
+          id="xixi"
+          style={{ height: "250px", width: "120px", border: "1px solid" }}
+        >
           <rame-app
             src="https://tmpl-dev.tencent-cloud.com/content/components/home-carousel?footerID=undefined&columnID=undefined&showChangeThemeIcon=undefined&showEmailIcon=undefined&showMessageCenterIcon=undefined&showSearchInput=undefined&logo=undefined"
             style={{
@@ -61,14 +69,17 @@ export const Home = () => {
             }}
           />
         </div>
-      </Rnd>
-      <div id="xixi" style={{ border: "1px solid" }}>
-        <rame-app
-          src="https://tmpl-dev.tencent-cloud.com/content/components/home-carousel?footerID=undefined&columnID=undefined&showChangeThemeIcon=undefined&showEmailIcon=undefined&showMessageCenterIcon=undefined&showSearchInput=undefined&logo=undefined"
-          style={{
-            pointerEvents: "none",
-          }}
-        />
+        <div
+          id="haha"
+          style={{ height: "200px", width: "100px", border: "1px solid" }}
+        >
+          <rame-app
+            src="https://tmpl-dev.tencent-cloud.com/content/components/home-carousel?footerID=undefined&columnID=undefined&showChangeThemeIcon=undefined&showEmailIcon=undefined&showMessageCenterIcon=undefined&showSearchInput=undefined&logo=undefined"
+            style={{
+              pointerEvents: "none",
+            }}
+          />
+        </div>
       </div>
     </div>
   );
