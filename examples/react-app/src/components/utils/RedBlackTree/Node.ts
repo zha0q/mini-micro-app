@@ -1,42 +1,46 @@
 /**
- * 二叉树的辅助类: 用于存储二叉树的每个节点
+ * 
  */
-export class Node<K> {
-  public left: Node<K> | undefined;
-  public right: Node<K> | undefined;
-  public parent: Node<K> | undefined;
-  constructor(public key: K, parent?: Node<K>) {
-    this.left = undefined;
-    this.right = undefined;
-    this.parent = parent;
+ export class RBNode<K, V> {
+  /**
+   * The left child link.
+   */
+  l: RBNode<K, V>;
+  /**
+   * The right child link.
+   */
+  r: RBNode<K, V>;
+  /**
+   * The parent of the node.
+   */
+  p: RBNode<K, V>;
+  /**
+   * The red (true) / black (false) flag.
+   */
+  flag = false;
+  /**
+   * Constructs a red-black binary tree node.
+   */
+  constructor(public key: K, public value: V) {
+      this.l = this;
+      this.r = this;
+      this.p = this;
   }
-
+  /*
+  get red(): boolean {
+      return this.flag;
+  }
+  set red(red: boolean) {
+      this.flag = red;
+  }
+  get black(): boolean {
+      return !this.flag;
+  }
+  set black(black: boolean) {
+      this.flag = !black;
+  }
+  */
   toString(): string {
-    return `${this.key}`;
-  }
-}
-
-export enum Colors {
-  RED = 0,
-  BLACK = 1,
-}
-
-/**
- * 红黑树辅助节点
- *   1. 添加parent和color节点
- *   2. 节点的默认颜色为红色
- */
-export class RedBlackNode<K> extends Node<K> {
-  public left: RedBlackNode<K> | undefined;
-  public right: RedBlackNode<K> | undefined;
-  public parent: RedBlackNode<K> | undefined;
-  public color: number;
-  constructor(public key: K) {
-    super(key);
-    this.color = Colors.RED;
-  }
-
-  isRed() {
-    return this.color === Colors.RED;
+      return `${this.flag ? 'red' : 'black'} ${this.key}`;
   }
 }

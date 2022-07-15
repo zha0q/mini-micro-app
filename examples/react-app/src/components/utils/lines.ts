@@ -1,17 +1,14 @@
-import { RedBlackNode } from "./RedBlackTree/Node";
-import RedBlackTree from "./RedBlackTree/RedBlackTree";
-
 import { Line, Box, LineType } from "./index.d";
 
 export default class Lines {
-  vLines: RedBlackTree<number>;
+  vLines: number[];
   vMap: Map<number, Line[]>;
-  hLines: RedBlackTree<number>;
+  hLines: number[];
   hMap: Map<number, Line[]>;
   constructor() {
-    this.vLines = new RedBlackTree();
+    this.vLines = new Array();
     this.vMap = new Map();
-    this.hLines = new RedBlackTree();
+    this.hLines = new Array();
     this.hMap = new Map();
   }
 
@@ -22,7 +19,7 @@ export default class Lines {
           (this.vMap.get(line.pos) as Line[]).push(line);
         } else {
           this.vMap.set(line.pos, [line]);
-          this.vLines.insert(line.pos);
+          this.vLines.push(line.pos);
         }
         break;
       case "H":
@@ -30,7 +27,7 @@ export default class Lines {
           (this.hMap.get(line.pos) as Line[]).push(line);
         } else {
           this.hMap.set(line.pos, [line]);
-          this.hLines.insert(line.pos);
+          this.hLines.push(line.pos);
         }
         break;
     }
@@ -40,22 +37,23 @@ export default class Lines {
     switch (line.type) {
       case "V":
         const vt: any = this.vMap.get(line.pos);
-        const idx = vt.findIndex((i: any) => i.box === line.box);
-        vt.splice(idx, 1);
-        console.log(vt);
+        vt.splice(
+          vt.findIndex((i: any) => i.box === line.box),
+          1
+        );
         if (vt.length === 0) {
-          this.vLines.remove(line.pos);
+          this.vLines.splice(this.vLines.findIndex((i: any) => i === line.pos));
           this.vMap.delete(line.pos);
         }
         break;
       case "H":
         const ht: any = this.hMap.get(line.pos);
         ht.splice(
-          ht.findIndex((i: any) => i.pos === line.pos),
+          ht.findIndex((i: any) => i.box === line.box),
           1
         );
         if (ht.length === 0) {
-          this.hLines.remove(line.pos);
+          this.hLines.splice(this.hLines.findIndex((i: any) => i === line.pos));
           this.hMap.delete(line.pos);
         }
         break;
@@ -73,20 +71,19 @@ export default class Lines {
           left: null,
           right: null,
         };
-        this.vLines.inOrderTraverse((v) => {
+        this.vLines.forEach((v) => {
           if (v < line.pos) {
             nodeV.left = v;
           } else if (v > line.pos) {
             nodeV.right = v;
           }
         });
-        if (nodeV.left && line.pos - nodeV.left <= dis) {
+        if (nodeV.left && Math.abs(line.pos - nodeV.left) <= dis) {
           vtl = this.vMap.get(nodeV.left);
         }
-        if (nodeV.right && nodeV.right - line.pos <= dis) {
+        if (nodeV.right && Math.abs(line.pos - nodeV.right) <= dis) {
           vtr = this.vMap.get(nodeV.right);
         }
-        // console.log(vt, vtl, vtr, nodeV, this.vMap, this.vLines);
         return vt.concat(vtl, vtr);
       case "H":
         const ht: any = this.hMap.has(line.pos) ? this.hMap.get(line.pos) : [];
@@ -96,21 +93,19 @@ export default class Lines {
           left: null,
           right: null,
         };
-        this.hLines.inOrderTraverse((v) => {
+        this.hLines.forEach((v) => {
           if (v < line.pos) {
             nodeH.left = v;
           } else if (v > line.pos) {
             nodeH.right = v;
           }
         });
-        // console.log(nodeH, this.hMap, this.hLines);
-        if (nodeH.left && line.pos - nodeH.left <= dis) {
+        if (nodeH.left && Math.abs(line.pos - nodeH.left) <= dis) {
           htl = this.hMap.get(nodeH.left);
         }
-        if (nodeH.right && nodeH.right - line.pos <= dis) {
+        if (nodeH.right && Math.abs(line.pos - nodeH.right) <= dis) {
           htr = this.hMap.get(nodeH.right);
         }
-        // console.log(htl, htr);
         return ht.concat(htl, htr);
     }
   }

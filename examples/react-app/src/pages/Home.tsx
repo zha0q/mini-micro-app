@@ -1,8 +1,7 @@
 import { useHistory } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import logo from "../logo.svg";
-import { Rnd } from "react-rnd";
-import { Rndd, Bak } from "../components/utils";
+import { Rnd, Bak } from "../components/utils";
 
 const getTranslateValue = (s: any) => {
   const reg = s.match(/translate\((.*?)\)/);
@@ -23,7 +22,7 @@ export const Home = () => {
   useEffect(() => {
     if (!newResize.current) {
       bak.current = new Bak(document.getElementById("bak") as HTMLElement);
-      newResize.current = new Rndd(
+      newResize.current = new Rnd(
         document.getElementById("xixi") as HTMLElement,
         bak.current,
         {
@@ -31,7 +30,7 @@ export const Home = () => {
           resizable: true,
         }
       );
-      newResize2.current = new Rndd(
+      newResize2.current = new Rnd(
         document.getElementById("haha") as HTMLElement,
         bak.current,
         {
@@ -53,14 +52,10 @@ export const Home = () => {
           }}
         />
       </div>
-      <div style={{ width: "900px", height: "900px", position: "relative" }}>
-        <div
-          id="bak"
-          style={{ height: "900px", width: "900px", position: "absolute" }}
-        ></div>
+      <div id="bak" style={{ height: "900px", width: "900px" }}>
         <div
           id="xixi"
-          style={{ height: "250px", width: "120px", border: "1px solid" }}
+          style={{ height: "250px", width: "120px" }}
         >
           <rame-app
             src="https://tmpl-dev.tencent-cloud.com/content/components/home-carousel?footerID=undefined&columnID=undefined&showChangeThemeIcon=undefined&showEmailIcon=undefined&showMessageCenterIcon=undefined&showSearchInput=undefined&logo=undefined"
@@ -71,7 +66,7 @@ export const Home = () => {
         </div>
         <div
           id="haha"
-          style={{ height: "200px", width: "100px", border: "1px solid" }}
+          style={{ height: "200px", width: "100px" }}
         >
           <rame-app
             src="https://tmpl-dev.tencent-cloud.com/content/components/home-carousel?footerID=undefined&columnID=undefined&showChangeThemeIcon=undefined&showEmailIcon=undefined&showMessageCenterIcon=undefined&showSearchInput=undefined&logo=undefined"
