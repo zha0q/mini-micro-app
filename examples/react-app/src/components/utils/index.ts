@@ -17,6 +17,7 @@ const lineT = ["vt", "vm", "vb", "hl", "hm", "hr"];
 
 export class Bak {
   public lines: Lines;
+  public showLines: Line[] = [];
   constructor(public elem: HTMLElement) {
     this.lines = new Lines();
     const svg = new Image(getWidth(this.elem), getHeight(this.elem));
@@ -53,7 +54,9 @@ export class Rnd {
       },
       this.options.resizable
     );
-    this.resize = new Resize(this.elem);
+    this.resize = new Resize(this.elem, (...v: any) => {
+      this.handleMove();
+    });
 
     this.elem.style.position = "absolute";
     this.elem.style.left = "0";
@@ -62,7 +65,7 @@ export class Rnd {
 
     const lines = this.buildLines();
     this.addLines(lines);
-    console.log(this.bak.lines.vLines, this.bak.lines.vMap);
+    const t: any = [];
     this.bak.lines.disappear();
     this.hideUserSelect();
   }
@@ -74,11 +77,12 @@ export class Rnd {
 
   createXLine(pos: number) {
     const xLine = document.createElement("div");
+    const rect = this.bak.elem.getBoundingClientRect();
     xLine.style.width = "100%";
     xLine.style.height = "1px";
     xLine.style.backgroundColor = "#59c7f9";
     xLine.style.position = "absolute";
-    xLine.style.top = `0`;
+    xLine.style.top = "0";
     xLine.style.left = "0";
     xLine.style.zIndex = "1000";
     setPosition(xLine, { x: 0, y: pos });
@@ -88,6 +92,7 @@ export class Rnd {
 
   createYLine(pos: number) {
     const yLine = document.createElement("div");
+    const rect = this.bak.elem.getBoundingClientRect();
     yLine.style.width = "1px";
     yLine.style.height = "100%";
     yLine.style.backgroundColor = "#59c7f9";
@@ -175,27 +180,25 @@ export class Rnd {
   handleMove() {
     // 所有寻找到的标线
     let searchLines: Line[] = [];
-    // 清除这个box之前的六条线
+    // 清除之前的线
     lineT.forEach((l) => {
       this.bak.lines.remove((this.box as any)[l]);
     });
-
-    // 将所有线隐藏
     this.bak.lines.disappear();
 
     const lines = this.buildLines();
-    this.addLines(lines);
     lineT.forEach((l) => {
-      searchLines.push(...this.bak.lines.search((this.box as any)[l], 100));
+      searchLines.push(...this.bak.lines.search((this.box as any)[l], 10));
     });
     searchLines = searchLines.filter((i) => i !== void 0);
+    this.addLines(lines);
     this.showLines(searchLines);
   }
 
   showLines(tLines: Line[]) {
-    console.log(tLines);
     tLines.forEach((line) => {
       line.instance.style.display = "block";
     });
+    this.bak.showLines.push(...tLines);
   }
 }

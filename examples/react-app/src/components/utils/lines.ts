@@ -41,8 +41,11 @@ export default class Lines {
           vt.findIndex((i: any) => i.box === line.box),
           1
         );
-        if (vt.length === 0) {
-          this.vLines.splice(this.vLines.findIndex((i: any) => i === line.pos));
+        if (vt.length <= 0) {
+          const idxV = this.vLines.findIndex((i) => i === line.pos);
+          if (idxV !== -1) {
+            this.vLines.splice(idxV, 1);
+          }
           this.vMap.delete(line.pos);
         }
         break;
@@ -52,8 +55,11 @@ export default class Lines {
           ht.findIndex((i: any) => i.box === line.box),
           1
         );
-        if (ht.length === 0) {
-          this.hLines.splice(this.hLines.findIndex((i: any) => i === line.pos));
+        if (ht.length <= 0) {
+          const idxH = this.hLines.findIndex((i) => i === line.pos);
+          if (idxH !== -1) {
+            this.hLines.splice(idxH, 1);
+          }
           this.hMap.delete(line.pos);
         }
         break;
@@ -71,20 +77,30 @@ export default class Lines {
           left: null,
           right: null,
         };
+
+        // !这里遍历需要处理
         this.vLines.forEach((v) => {
           if (v < line.pos) {
-            nodeV.left = v;
-          } else if (v > line.pos) {
-            nodeV.right = v;
+            if (nodeV.left === null) nodeV.left = v;
+            if (nodeV.left !== null && v > nodeV.left) {
+              nodeV.left = v;
+            }
+          }
+          if (v > line.pos) {
+            if (nodeV.right === null) nodeV.right = v;
+            if (nodeV.right !== null && v < nodeV.right) {
+              nodeV.right = v;
+            }
           }
         });
         if (nodeV.left && Math.abs(line.pos - nodeV.left) <= dis) {
           vtl = this.vMap.get(nodeV.left);
         }
-        if (nodeV.right && Math.abs(line.pos - nodeV.right) <= dis) {
+        if (nodeV.right && Math.abs(nodeV.right - line.pos) <= dis) {
           vtr = this.vMap.get(nodeV.right);
         }
-        return vt.concat(vtl, vtr);
+        console.log(line.pos, nodeV, Array.from(new Set(vt.concat(vtl, vtr))));
+        return Array.from(new Set(vt.concat(vtl, vtr))) as any;
       case "H":
         const ht: any = this.hMap.has(line.pos) ? this.hMap.get(line.pos) : [];
         let htl: any = [];
@@ -95,30 +111,40 @@ export default class Lines {
         };
         this.hLines.forEach((v) => {
           if (v < line.pos) {
-            nodeH.left = v;
-          } else if (v > line.pos) {
-            nodeH.right = v;
+            if (nodeH.left === null) nodeH.left = v;
+            if (nodeH.left !== null && v > nodeH.left) {
+              nodeH.left = v;
+            }
+          }
+          if (v > line.pos) {
+            if (nodeH.right === null) nodeH.right = v;
+            if (nodeH.right !== null && v < nodeH.right) {
+              nodeH.right = v;
+            }
           }
         });
         if (nodeH.left && Math.abs(line.pos - nodeH.left) <= dis) {
           htl = this.hMap.get(nodeH.left);
         }
-        if (nodeH.right && Math.abs(line.pos - nodeH.right) <= dis) {
+        if (nodeH.right && Math.abs(nodeH.right - line.pos) <= dis) {
           htr = this.hMap.get(nodeH.right);
         }
-        return ht.concat(htl, htr);
+        return Array.from(new Set(ht.concat(htl, htr))) as any;
     }
   }
 
   disappear() {
+    let t = 0;
     Array.from(this.vMap.keys()).forEach((k) => {
       this.vMap.get(k)?.forEach((line) => {
         line.instance.style.display = "none";
+        t++;
       });
     });
     Array.from(this.hMap.keys()).forEach((k) => {
       this.hMap.get(k)?.forEach((line) => {
         line.instance.style.display = "none";
+        t++;
       });
     });
   }

@@ -25,7 +25,7 @@ export default class Resize {
 
   onResizeStop: any = () => {};
 
-  constructor(selector: any, options?: { onResizeStop: any }) {
+  constructor(selector: any, public onResize: any) {
     this.elem = selector;
     this.elem.style.cursor = "move";
 
@@ -45,6 +45,13 @@ export default class Resize {
         setPosition(this.elem, { x: currentX, y: this.sourceY });
         setWidth(this.elem, this.sourceWidth - distanceX);
       }
+
+      this.onResize({
+        clientX: this.rect.x,
+        clientY: this.rect.y,
+        sourceWidth: this.sourceWidth,
+        sourceHeight: this.sourceHeight,
+      });
     };
 
     function end() {
@@ -63,6 +70,13 @@ export default class Resize {
         setPosition(this.elem, { x: this.sourceX, y: currentY });
         setHeight(this.elem, this.sourceHeight - distanceY);
       }
+
+      this.onResize({
+        clientX: this.rect.x,
+        clientY: this.rect.y,
+        sourceWidth: this.sourceWidth,
+        sourceHeight: this.sourceHeight,
+      });
     };
 
     function end() {
@@ -79,6 +93,13 @@ export default class Resize {
       if (this.sourceWidth + distanceX >= this.minHeight) {
         setWidth(this.elem, this.sourceWidth + distanceX);
       }
+
+      this.onResize({
+        clientX: this.rect.x,
+        clientY: this.rect.y,
+        sourceWidth: this.sourceWidth,
+        sourceHeight: this.sourceHeight,
+      });
     };
 
     function end() {
@@ -95,6 +116,13 @@ export default class Resize {
       if (this.sourceHeight + distanceY >= this.minWidth) {
         setHeight(this.elem, this.sourceHeight + distanceY);
       }
+
+      this.onResize({
+        clientX: this.rect.x,
+        clientY: this.rect.y,
+        sourceWidth: this.sourceWidth,
+        sourceHeight: this.sourceHeight,
+      });
     };
 
     function end() {
@@ -119,6 +147,13 @@ export default class Resize {
         setWidth(this.elem, this.sourceWidth - distanceX);
         setHeight(this.elem, this.sourceHeight - distanceY);
       }
+
+      this.onResize({
+        clientX: this.rect.x,
+        clientY: this.rect.y,
+        sourceWidth: this.sourceWidth,
+        sourceHeight: this.sourceHeight,
+      });
     };
 
     function end() {
@@ -139,7 +174,6 @@ export default class Resize {
       let pos = getPosition(this.elem);
       this.sourceX = pos.x;
       this.sourceY = pos.y;
-
 
       if (Math.abs(this.startX - this.rect.x - this.sourceWidth) <= 6) {
         if (Math.abs(this.startY - this.rect.y) <= 6) {
