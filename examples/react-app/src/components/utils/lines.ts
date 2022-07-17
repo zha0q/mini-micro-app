@@ -93,13 +93,13 @@ export default class Lines {
             }
           }
         });
-        if (nodeV.left && Math.abs(line.pos - nodeV.left) <= dis) {
+        if (nodeV.left !== null && Math.abs(line.pos - nodeV.left) <= dis) {
           vtl = this.vMap.get(nodeV.left);
         }
-        if (nodeV.right && Math.abs(nodeV.right - line.pos) <= dis) {
+        if (nodeV.right !== null && Math.abs(nodeV.right - line.pos) <= dis) {
           vtr = this.vMap.get(nodeV.right);
         }
-        console.log(line.pos, nodeV, Array.from(new Set(vt.concat(vtl, vtr))));
+
         return Array.from(new Set(vt.concat(vtl, vtr))) as any;
       case "H":
         const ht: any = this.hMap.has(line.pos) ? this.hMap.get(line.pos) : [];
@@ -123,10 +123,10 @@ export default class Lines {
             }
           }
         });
-        if (nodeH.left && Math.abs(line.pos - nodeH.left) <= dis) {
+        if (nodeH.left !== null && Math.abs(line.pos - nodeH.left) <= dis) {
           htl = this.hMap.get(nodeH.left);
         }
-        if (nodeH.right && Math.abs(nodeH.right - line.pos) <= dis) {
+        if (nodeH.right !== null && Math.abs(nodeH.right - line.pos) <= dis) {
           htr = this.hMap.get(nodeH.right);
         }
         return Array.from(new Set(ht.concat(htl, htr))) as any;

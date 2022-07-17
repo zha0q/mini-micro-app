@@ -1,3 +1,4 @@
+import { thisTypeAnnotation } from "@babel/types";
 import {
   getWidth,
   getHeight,
@@ -6,6 +7,8 @@ import {
   setHeight,
   setPosition,
   setWidth,
+  EventBus,
+  throttle,
 } from "./utils";
 
 export default class Drag {
@@ -17,11 +20,20 @@ export default class Drag {
   startY = 0;
   sourceX = 0;
   sourceY = 0;
-  rect: any = null;
   sourceHeight = 0;
   sourceWidth = 0;
 
-  constructor(selector: any, public onDrag: any, resizeable: boolean) {
+  attaching = false;
+  attachPos: any = {};
+
+  // throttleSetPosition = throttle(setPosition, 1000);
+
+  constructor(
+    selector: any,
+    public eventBus: EventBus,
+    resizeable: boolean,
+    public attach: any
+  ) {
     // 放在构造函数中的属性，都是属于每一个实例单独拥有
     this.elem = selector;
     // this.elem = document.getElementById(id)
@@ -31,6 +43,13 @@ export default class Drag {
   init() {
     this.setDrag();
     this.addCursor();
+
+    this.eventBus.on("attach", (attaching: boolean, pos?: any) => {
+      this.attaching = attaching;
+      if (attaching) {
+        this.attachPos = pos;
+      }
+    });
   }
 
   setDrag() {
@@ -42,20 +61,10 @@ export default class Drag {
       that.startY = e.pageY;
       that.sourceWidth = getWidth(that.elem);
       that.sourceHeight = getHeight(that.elem);
-      that.rect = that.elem.getBoundingClientRect();
       let pos = getPosition(that.elem);
       that.sourceX = pos.x;
       that.sourceY = pos.y;
 
-      if (
-        Math.abs(that.startX - that.rect.x - that.sourceWidth) <= 6 ||
-        Math.abs(that.startX - that.rect.x) <= 6 ||
-        Math.abs(that.startY - that.rect.y) <= 6 ||
-        Math.abs(that.startY - that.rect.y - that.sourceHeight) <= 6
-      ) {
-        console.log("here");
-        return;
-      }
       document.addEventListener("mousemove", move);
       document.addEventListener("mouseup", end);
 
@@ -69,18 +78,23 @@ export default class Drag {
       let distanceX = currentX - that.startX,
         distanceY = currentY - that.startY;
 
-      setPosition(that.elem, {
-        x: (that.sourceX + distanceX).toFixed(),
-        y: (that.sourceY + distanceY).toFixed(),
-      });
-      that.rect = that.elem.getBoundingClientRect();
+      if (!that.attaching) {
+        setPosition(that.elem, {
+          x: (that.sourceX + distanceX).toFixed(),
+          y: (that.sourceY + distanceY).toFixed(),
+        });
+        that.eventBus.dispatch("drag", [e]);
+      } else {
+        console.log(distanceY);
+        setPosition(that.elem, {
+          x: that.attachPos.x ?? (that.sourceX + distanceX).toFixed(),
+          y: that.attachPos.y ?? (that.sourceY + distanceY).toFixed(),
+        });
+        // that.throttleSetPosition(that, that.elem, that.attachPos);
+        // setPosition(that.elem, that.attachPos);
+      }
+
       //通知 Rnd 拖拽
-      that.onDrag({
-        clientX: that.rect.x,
-        clientY: that.rect.y,
-        sourceWidth: that.sourceWidth,
-        sourceHeight: that.sourceHeight,
-      });
     }
 
     function end() {

@@ -44,11 +44,37 @@ export function setPosition(elem: HTMLElement, pos: any) {
 
 export function throttle(func: any, delay: number) {
   let last = 0;
-  return () => {
+  return (...ctx: any) => {
+    console.log(ctx);
     var now = Date.now();
     if (now >= delay + last) {
-      func();
+      console.log(now, delay, last);
+      func.call(...ctx);
       last = now;
     }
+  };
+}
+
+export class EventBus {
+  public listener: Map<string, any[]> = new Map();
+  /**
+   * on
+   */
+  public on(ev: string, fn: any) {
+    if (this.listener.has(ev)) {
+      const fnArray = this.listener.get(ev) as any;
+      this.listener.set(ev, fnArray?.concat([fn]));
+    } else {
+      this.listener.set(ev, [fn]);
+    }
+  }
+
+  /**
+   * dispatch
+   */
+  public dispatch = (ev: string, args: any) => {
+    this.listener.get(ev)?.forEach((fn) => {
+      fn.call(this, ...args);
+    });
   };
 }

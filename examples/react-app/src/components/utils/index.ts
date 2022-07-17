@@ -8,7 +8,10 @@ import {
   getPosition,
   getWidth,
   setPosition,
+  setWidth,
+  setHeight,
   throttle,
+  EventBus,
 } from "./utils";
 
 type LineT = "vt" | "vm" | "vb" | "hl" | "hm" | "hr";
@@ -17,7 +20,7 @@ const lineT = ["vt", "vm", "vb", "hl", "hm", "hr"];
 
 export class Bak {
   public lines: Lines;
-  public showLines: Line[] = [];
+  public mayAttachLines: any = {};
   constructor(public elem: HTMLElement) {
     this.lines = new Lines();
     const svg = new Image(getWidth(this.elem), getHeight(this.elem));
@@ -34,29 +37,34 @@ export class Rnd {
   public box: Box | undefined;
   public rndLocation: any = {};
 
-  //   public lines: Lines = ;
+  public eventBus: EventBus = new EventBus();
+
   constructor(
     public elem: HTMLElement,
     public bak: Bak,
     public options: {
-      dragable: boolean;
+      draggable: boolean;
       resizable: boolean;
+      color?: string;
+      nearLineDistance?: number;
+      sensitive?: number;
     }
   ) {
     this.init();
   }
 
   init() {
+    if (!this.options.color) this.options.color = "red";
+    if (!this.options.nearLineDistance) this.options.nearLineDistance = 0;
+    if (!this.options.sensitive) this.options.sensitive = 0;
+
+    this.resize = new Resize(this.elem, this.eventBus, this.options.color);
     this.drag = new Drag(
       this.elem,
-      (...v: any) => {
-        this.handleMove();
-      },
-      this.options.resizable
+      this.eventBus,
+      this.options.resizable,
+      this.attach.bind(this)
     );
-    this.resize = new Resize(this.elem, (...v: any) => {
-      this.handleMove();
-    });
 
     this.elem.style.position = "absolute";
     this.elem.style.left = "0";
@@ -68,6 +76,15 @@ export class Rnd {
     const t: any = [];
     this.bak.lines.disappear();
     this.hideUserSelect();
+
+    this.eventBus.on("drag", (e: MouseEvent) => {
+      this.attach(e);
+    });
+    this.eventBus.on("resize", (e: MouseEvent) => {
+      this.handleMoveLine();
+    });
+
+    document.addEventListener("mouseup", (e) => this.bak.lines.disappear());
   }
 
   // 清除双击选中效果，增加用户体验
@@ -78,9 +95,10 @@ export class Rnd {
   createXLine(pos: number) {
     const xLine = document.createElement("div");
     const rect = this.bak.elem.getBoundingClientRect();
+    xLine.style.display = "none";
     xLine.style.width = "100%";
     xLine.style.height = "1px";
-    xLine.style.backgroundColor = "#59c7f9";
+    xLine.style.backgroundColor = this.options.color as string;
     xLine.style.position = "absolute";
     xLine.style.top = "0";
     xLine.style.left = "0";
@@ -93,9 +111,10 @@ export class Rnd {
   createYLine(pos: number) {
     const yLine = document.createElement("div");
     const rect = this.bak.elem.getBoundingClientRect();
+    yLine.style.display = "none";
     yLine.style.width = "1px";
     yLine.style.height = "100%";
-    yLine.style.backgroundColor = "#59c7f9";
+    yLine.style.backgroundColor = this.options.color as string;
     yLine.style.position = "absolute";
     yLine.style.top = "0";
     yLine.style.left = "0";
@@ -177,28 +196,110 @@ export class Rnd {
   }
 
   // 处理resize以及drag时 的 标线
-  handleMove() {
+  handleMoveLine() {
     // 所有寻找到的标线
     let searchLines: Line[] = [];
     // 清除之前的线
     lineT.forEach((l) => {
       this.bak.lines.remove((this.box as any)[l]);
     });
-    this.bak.lines.disappear();
+    // this.bak.lines.disappear();
 
     const lines = this.buildLines();
     lineT.forEach((l) => {
-      searchLines.push(...this.bak.lines.search((this.box as any)[l], 10));
+      const nearLines = this.bak.lines.search(
+        (this.box as any)[l],
+        this.options.nearLineDistance as number
+      );
+      searchLines.push(...nearLines);
+      this.bak.mayAttachLines[l] = nearLines;
     });
     searchLines = searchLines.filter((i) => i !== void 0);
     this.addLines(lines);
-    this.showLines(searchLines);
   }
 
   showLines(tLines: Line[]) {
     tLines.forEach((line) => {
       line.instance.style.display = "block";
     });
-    this.bak.showLines.push(...tLines);
+  }
+
+  attach(e: MouseEvent) {
+    const sensitive = this.options.sensitive ? this.options.sensitive : 4;
+    lineT.forEach((l) => {
+      const curLine = (this.box as any)[l];
+      const nearLine =
+        this.bak.mayAttachLines[l] && this.bak.mayAttachLines[l].length
+          ? this.bak.mayAttachLines[l].reduce((pre: any, cur: any) =>
+              Math.min(
+                // 这里之前写成两个一样的对比，所以出现了 会同时出现两条线的情况
+                Math.abs(pre.pos - curLine.pos),
+                Math.abs(cur.pos - curLine.pos)
+              )
+            )
+          : null;
+
+      if (!nearLine || nearLine.pos - curLine.pos >= sensitive) return;
+      this.bak.lines.disappear();
+
+      this.showLines([nearLine]);
+
+      const startX = e.pageX,
+        startY = e.pageY;
+      switch (nearLine.type) {
+        case "H":
+          const moveH = (e: MouseEvent) => {
+            if (Math.abs(e.pageX - startX) <= sensitive) {
+              this.eventBus.dispatch("attach", [
+                true,
+                {
+                  x: nearLine.pos,
+                  y: null,
+                },
+              ]);
+
+              this.handleMoveLine();
+              this.resize?.setResize();
+              document.addEventListener("mouseup", () => {
+                document.removeEventListener("mousemove", moveH);
+                this.eventBus.dispatch("attach", [false]);
+              });
+            } else {
+              this.eventBus.dispatch("attach", [false]);
+              document.removeEventListener("mousemove", moveH as any);
+              this.handleMoveLine();
+              this.resize?.setResize();
+            }
+          };
+          document.addEventListener("mousemove", moveH as any);
+          break;
+        case "V":
+          const moveV = (e: MouseEvent) => {
+            if (Math.abs(e.pageY - startY) <= sensitive) {
+              console.log(e.pageY - startY);
+              this.eventBus.dispatch("attach", [
+                true,
+                { x: null, y: nearLine.pos },
+              ]);
+              this.handleMoveLine();
+              this.resize?.setResize();
+              document.addEventListener("mouseup", () => {
+                this.eventBus.dispatch("attach", [false]);
+                document.removeEventListener("mousemove", moveV);
+              });
+            } else {
+              this.eventBus.dispatch("attach", [false]);
+              document.removeEventListener("mousemove", moveV as any);
+              this.handleMoveLine();
+              this.resize?.setResize();
+            }
+          };
+          document.addEventListener("mousemove", moveV as any);
+          break;
+      }
+    });
+
+    this.resize?.setResize();
+    this.handleMoveLine();
   }
 }

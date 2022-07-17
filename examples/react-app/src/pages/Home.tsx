@@ -26,16 +26,20 @@ export const Home = () => {
         document.getElementById("xixi") as HTMLElement,
         bak.current,
         {
-          dragable: true,
+          draggable: true,
           resizable: true,
+          sensitive: 8,
+          nearLineDistance: 10,
         }
       );
       newResize2.current = new Rnd(
         document.getElementById("haha") as HTMLElement,
         bak.current,
         {
-          dragable: true,
+          draggable: true,
           resizable: true,
+          sensitive: 8,
+          nearLineDistance: 10,
         }
       );
     }
@@ -53,10 +57,7 @@ export const Home = () => {
         />
       </div>
       <div id="bak" style={{ height: "900px", width: "900px" }}>
-        <div
-          id="xixi"
-          style={{ height: "250px", width: "120px" }}
-        >
+        <div id="xixi" style={{ height: "250px", width: "120px" }}>
           <rame-app
             src="https://tmpl-dev.tencent-cloud.com/content/components/home-carousel?footerID=undefined&columnID=undefined&showChangeThemeIcon=undefined&showEmailIcon=undefined&showMessageCenterIcon=undefined&showSearchInput=undefined&logo=undefined"
             style={{
@@ -64,10 +65,7 @@ export const Home = () => {
             }}
           />
         </div>
-        <div
-          id="haha"
-          style={{ height: "200px", width: "100px" }}
-        >
+        <div id="haha" style={{ height: "200px", width: "100px" }}>
           <rame-app
             src="https://tmpl-dev.tencent-cloud.com/content/components/home-carousel?footerID=undefined&columnID=undefined&showChangeThemeIcon=undefined&showEmailIcon=undefined&showMessageCenterIcon=undefined&showSearchInput=undefined&logo=undefined"
             style={{
