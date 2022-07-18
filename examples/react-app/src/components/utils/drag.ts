@@ -83,68 +83,50 @@ export default class Drag {
       let distanceX = currentX - that.startX,
         distanceY = currentY - that.startY;
 
-      switch (that.type) {
-        case "H":
-          if (
-            Math.abs(
-              that.sourceX +
-                that.attachPos.diff +
-                distanceX -
-                that.attachPos.nearLine
-            ) > that.sensitive
-          ) {
-            setPosition(that.elem, {
-              x: (that.sourceX + distanceX).toFixed(),
-              y: (that.sourceY + distanceY).toFixed(),
-            });
-            that.type = null;
-            that.eventBus.dispatch("drag", [e]);
-          } else {
-            setPosition(that.elem, {
-              x:
-                that.attachPos.nearLine - that.attachPos.diff ??
-                (that.sourceX + distanceX).toFixed(),
-              y: (that.sourceY + distanceY).toFixed(),
-            });
-            that.attachCallback();
-            that.type = null;
-            that.eventBus.dispatch("drag", [e]);
-          }
-          break;
-        case "V":
-          if (
-            Math.abs(
-              that.sourceY +
-                that.attachPos.diff +
-                distanceY -
-                that.attachPos.nearLine
-            ) > that.sensitive
-          ) {
-            setPosition(that.elem, {
-              x: (that.sourceX + distanceX).toFixed(),
-              y: (that.sourceY + distanceY).toFixed(),
-            });
-            that.type = null;
-            that.eventBus.dispatch("drag", [e]);
-          } else {
-            setPosition(that.elem, {
-              x: (that.sourceX + distanceX).toFixed(),
-              y:
-                that.attachPos.nearLine - that.attachPos.diff ??
-                (that.sourceY + distanceY).toFixed(),
-            });
-            that.attachCallback();
-            that.type = null;
-            that.eventBus.dispatch("drag", [e]);
-          }
-          break;
-        default:
-          setPosition(that.elem, {
-            x: (that.sourceX + distanceX).toFixed(),
-            y: (that.sourceY + distanceY).toFixed(),
-          });
-          that.type = null;
-          that.eventBus.dispatch("drag", [e]);
+
+      // 判断是否有需要进行吸附的水平线或垂直线
+      if (
+        !that.type ||
+        (that.attachPos.diffH !== null &&
+          Math.abs(
+            that.sourceX +
+              that.attachPos.diffH +
+              distanceX -
+              that.attachPos.nearLineH
+          ) > that.sensitive) ||
+        (that.attachPos.diffV !== null &&
+          Math.abs(
+            that.sourceY +
+              that.attachPos.diffV +
+              distanceY -
+              that.attachPos.nearLineV
+          ) > that.sensitive)
+      ) {
+        setPosition(that.elem, {
+          x: (that.sourceX + distanceX).toFixed(),
+          y: (that.sourceY + distanceY).toFixed(),
+        });
+        that.eventBus.dispatch("drag", [e]);
+      } else {
+        console.log({
+          x: that.attachPos.nearLineH
+            ? that.attachPos.nearLineH - that.attachPos.diffH
+            : (that.sourceX + distanceX).toFixed(),
+          y: that.attachPos.nearLineV
+            ? that.attachPos.nearLineV - that.attachPos.diffV
+            : (that.sourceY + distanceY).toFixed(),
+        });
+        setPosition(that.elem, {
+          x: that.attachPos.nearLineH
+            ? that.attachPos.nearLineH - that.attachPos.diffH
+            : (that.sourceX + distanceX).toFixed(),
+          y: that.attachPos.nearLineV
+            ? that.attachPos.nearLineV - that.attachPos.diffV
+            : (that.sourceY + distanceY).toFixed(),
+        });
+        that.attachCallback();
+        that.type = null;
+        that.eventBus.dispatch("drag", [e]);
       }
 
       //通知 Rnd 拖拽

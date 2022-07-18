@@ -220,65 +220,88 @@ export class Rnd {
 
   showLines(tLines: Line[]) {
     tLines.forEach((line) => {
-      line.instance.style.display = "block";
+      if (line) line.instance.style.display = "block";
     });
   }
 
   attach(e: MouseEvent) {
     const sensitive = this.options.sensitive ? this.options.sensitive : 6;
     const curPos = getPosition(this.elem);
+    let curLineH: any = null,
+      curLineV: any = null,
+      nearLineH: any = null,
+      nearLineV: any = null;
+
+    // 遍历所有line寻找到可能要进行吸附的一条水平线和一条垂直线
     lineT.forEach((l) => {
       const curLine = (this.box as any)[l];
       const nearLine =
         this.bak.mayAttachLines[l] && this.bak.mayAttachLines[l].length
           ? this.bak.mayAttachLines[l].reduce((pre: any, cur: any) =>
               Math.min(
-                // 这里之前写成两个一样的对比，所以出现了 会同时出现两条线的情况
+                // 找出最接近的一条 这里之前写成两个一样的对比，所以出现了 会同时出现两条线的情况
                 Math.abs(pre.pos - curLine.pos),
                 Math.abs(cur.pos - curLine.pos)
               )
             )
           : null;
-
-      if (!nearLine || nearLine.pos - curLine.pos >= sensitive) return;
-      this.bak.lines.disappear();
-
-      this.showLines([nearLine]);
-
-      switch (nearLine.type) {
-        case "H":
-          console.log(curPos.x, curLine, curLine.pos - curPos.x);
-          this.eventBus.dispatch("attach", [
-            "H",
-            {
-              nearLine: nearLine.pos,
-              curLine: curLine.pos,
-              diff: curLine.pos - curPos.x,
-            },
-            sensitive,
-            () => {
-              this.handleMoveLine();
-              this.resize?.setResize();
-            },
-          ]);
-          break;
-        case "V":
-          this.eventBus.dispatch("attach", [
-            "V",
-            {
-              curLine: curLine.pos,
-              nearLine: nearLine.pos,
-              diff: curLine.pos - curPos.y,
-            },
-            sensitive,
-            () => {
-              this.handleMoveLine();
-              this.resize?.setResize();
-            },
-          ]);
-          break;
+      if (nearLine) {
+        switch (curLine.type) {
+          case "H":
+            if (
+              !curLineH ||
+              Math.abs(nearLine.pos - curLine.pos) <
+                Math.abs(nearLineH.pos - curLineH.pos)
+            ) {
+              curLineH = curLine;
+              nearLineH = nearLine;
+            }
+            break;
+          case "V":
+            if (
+              !curLineV ||
+              Math.abs(nearLine.pos - curLine.pos) <
+                Math.abs(nearLineV.pos - curLineV.pos)
+            ) {
+              curLineV = curLine;
+              nearLineV = nearLine;
+            }
+            break;
+        }
       }
     });
+
+    if (
+      (!nearLineH && !nearLineV) ||
+      (nearLineH && nearLineH.pos - curLineH.pos >= sensitive) ||
+      (nearLineV && nearLineV.pos - curLineV.pos >= sensitive)
+    ) {
+      this.handleMoveLine();
+      this.resize?.setResize();
+      return;
+    }
+    this.bak.lines.disappear();
+
+    this.showLines([nearLineH ?? undefined, nearLineV ?? undefined]);
+
+    // 触发attach事件，交由drag组件进行是否贴合的判断
+    this.eventBus.dispatch("attach", [
+      "attach",
+      {
+        nearLineH: nearLineH?.pos,
+        curLineH: curLineH?.pos,
+        diffH: curLineH?.pos - curPos.x,
+        nearLineV: nearLineV?.pos,
+        curLineV: curLineV?.pos,
+        diffV: curLineV?.pos - curPos.y,
+      },
+      sensitive,
+      () => {
+        this.handleMoveLine();
+        this.resize?.setResize();
+        this.bak.lines.disappear();
+      },
+    ]);
 
     this.resize?.setResize();
     this.handleMoveLine();
