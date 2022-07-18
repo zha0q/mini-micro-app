@@ -225,7 +225,8 @@ export class Rnd {
   }
 
   attach(e: MouseEvent) {
-    const sensitive = this.options.sensitive ? this.options.sensitive : 4;
+    const sensitive = this.options.sensitive ? this.options.sensitive : 6;
+    const curPos = getPosition(this.elem);
     lineT.forEach((l) => {
       const curLine = (this.box as any)[l];
       const nearLine =
@@ -244,57 +245,37 @@ export class Rnd {
 
       this.showLines([nearLine]);
 
-      const startX = e.pageX,
-        startY = e.pageY;
       switch (nearLine.type) {
         case "H":
-          const moveH = (e: MouseEvent) => {
-            if (Math.abs(e.pageX - startX) <= sensitive) {
-              this.eventBus.dispatch("attach", [
-                true,
-                {
-                  x: nearLine.pos,
-                  y: null,
-                },
-              ]);
-
+          console.log(curPos.x, curLine, curLine.pos - curPos.x);
+          this.eventBus.dispatch("attach", [
+            "H",
+            {
+              nearLine: nearLine.pos,
+              curLine: curLine.pos,
+              diff: curLine.pos - curPos.x,
+            },
+            sensitive,
+            () => {
               this.handleMoveLine();
               this.resize?.setResize();
-              document.addEventListener("mouseup", () => {
-                document.removeEventListener("mousemove", moveH);
-                this.eventBus.dispatch("attach", [false]);
-              });
-            } else {
-              this.eventBus.dispatch("attach", [false]);
-              document.removeEventListener("mousemove", moveH as any);
-              this.handleMoveLine();
-              this.resize?.setResize();
-            }
-          };
-          document.addEventListener("mousemove", moveH as any);
+            },
+          ]);
           break;
         case "V":
-          const moveV = (e: MouseEvent) => {
-            if (Math.abs(e.pageY - startY) <= sensitive) {
-              console.log(e.pageY - startY);
-              this.eventBus.dispatch("attach", [
-                true,
-                { x: null, y: nearLine.pos },
-              ]);
+          this.eventBus.dispatch("attach", [
+            "V",
+            {
+              curLine: curLine.pos,
+              nearLine: nearLine.pos,
+              diff: curLine.pos - curPos.y,
+            },
+            sensitive,
+            () => {
               this.handleMoveLine();
               this.resize?.setResize();
-              document.addEventListener("mouseup", () => {
-                this.eventBus.dispatch("attach", [false]);
-                document.removeEventListener("mousemove", moveV);
-              });
-            } else {
-              this.eventBus.dispatch("attach", [false]);
-              document.removeEventListener("mousemove", moveV as any);
-              this.handleMoveLine();
-              this.resize?.setResize();
-            }
-          };
-          document.addEventListener("mousemove", moveV as any);
+            },
+          ]);
           break;
       }
     });

@@ -270,6 +270,7 @@ export default class Resize {
       shape.style.height = "4px";
       shape.style.width = "4px";
       shape.style.border = `1px ${this.shapeColor} solid`;
+      shape.style.borderRadius = "4px";
       // 添加点击事件
       shape.addEventListener("mousedown", (e) => {
         this.startX = e.pageX;

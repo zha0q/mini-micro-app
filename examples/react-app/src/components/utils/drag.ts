@@ -23,8 +23,10 @@ export default class Drag {
   sourceHeight = 0;
   sourceWidth = 0;
 
-  attaching = false;
   attachPos: any = {};
+  sensitive: any;
+  type: any = null;
+  attachCallback: any;
 
   // throttleSetPosition = throttle(setPosition, 1000);
 
@@ -44,12 +46,15 @@ export default class Drag {
     this.setDrag();
     this.addCursor();
 
-    this.eventBus.on("attach", (attaching: boolean, pos?: any) => {
-      this.attaching = attaching;
-      if (attaching) {
+    this.eventBus.on(
+      "attach",
+      (type: any, pos: any, sensitive: any, cb: any) => {
+        this.type = type;
         this.attachPos = pos;
+        this.sensitive = sensitive;
+        this.attachCallback = cb;
       }
-    });
+    );
   }
 
   setDrag() {
@@ -78,20 +83,68 @@ export default class Drag {
       let distanceX = currentX - that.startX,
         distanceY = currentY - that.startY;
 
-      if (!that.attaching) {
-        setPosition(that.elem, {
-          x: (that.sourceX + distanceX).toFixed(),
-          y: (that.sourceY + distanceY).toFixed(),
-        });
-        that.eventBus.dispatch("drag", [e]);
-      } else {
-        console.log(distanceY);
-        setPosition(that.elem, {
-          x: that.attachPos.x ?? (that.sourceX + distanceX).toFixed(),
-          y: that.attachPos.y ?? (that.sourceY + distanceY).toFixed(),
-        });
-        // that.throttleSetPosition(that, that.elem, that.attachPos);
-        // setPosition(that.elem, that.attachPos);
+      switch (that.type) {
+        case "H":
+          if (
+            Math.abs(
+              that.sourceX +
+                that.attachPos.diff +
+                distanceX -
+                that.attachPos.nearLine
+            ) > that.sensitive
+          ) {
+            setPosition(that.elem, {
+              x: (that.sourceX + distanceX).toFixed(),
+              y: (that.sourceY + distanceY).toFixed(),
+            });
+            that.type = null;
+            that.eventBus.dispatch("drag", [e]);
+          } else {
+            setPosition(that.elem, {
+              x:
+                that.attachPos.nearLine - that.attachPos.diff ??
+                (that.sourceX + distanceX).toFixed(),
+              y: (that.sourceY + distanceY).toFixed(),
+            });
+            that.attachCallback();
+            that.type = null;
+            that.eventBus.dispatch("drag", [e]);
+          }
+          break;
+        case "V":
+          if (
+            Math.abs(
+              that.sourceY +
+                that.attachPos.diff +
+                distanceY -
+                that.attachPos.nearLine
+            ) > that.sensitive
+          ) {
+            setPosition(that.elem, {
+              x: (that.sourceX + distanceX).toFixed(),
+              y: (that.sourceY + distanceY).toFixed(),
+            });
+            that.type = null;
+            that.eventBus.dispatch("drag", [e]);
+          } else {
+            setPosition(that.elem, {
+              x: (that.sourceX + distanceX).toFixed(),
+              y:
+                that.attachPos.nearLine - that.attachPos.diff ??
+                (that.sourceY + distanceY).toFixed(),
+            });
+            that.attachCallback();
+            that.type = null;
+            that.eventBus.dispatch("drag", [e]);
+          }
+          break;
+        default:
+          setPosition(that.elem, {
+            x: (that.sourceX + distanceX).toFixed(),
+            y: (that.sourceY + distanceY).toFixed(),
+          });
+          that.type = null;
+          that.eventBus.dispatch("drag", [e]);
       }
 
       //通知 Rnd 拖拽
