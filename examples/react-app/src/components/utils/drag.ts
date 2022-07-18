@@ -61,6 +61,15 @@ export default class Drag {
     const that = this;
     this.elem.addEventListener("mousedown", start);
 
+    let throttleCalculateSpeed: (
+      that: this,
+      distanceX: number,
+      distanceY: number
+    ) => number;
+
+    // 拖动速度的计算值
+    let speed: number = 20;
+
     function start(e: MouseEvent) {
       that.startX = e.pageX;
       that.startY = e.pageY;
@@ -69,6 +78,23 @@ export default class Drag {
       let pos = getPosition(that.elem);
       that.sourceX = pos.x;
       that.sourceY = pos.y;
+
+      let preX = 0,
+        preY = 0;
+
+      // 根据单位时间（200ms）内的移动距离来计算光标移动速度，以此作为用户是否想要进行吸附的判断
+      throttleCalculateSpeed = throttle(
+        (distanceX: number, distanceY: number) => {
+          const speed: number = Math.max(
+            Math.abs(distanceX - preX),
+            Math.abs(distanceY - preY)
+          );
+          preX = distanceX;
+          preY = distanceY;
+          return speed;
+        },
+        200
+      );
 
       document.addEventListener("mousemove", move);
       document.addEventListener("mouseup", end);
@@ -83,9 +109,11 @@ export default class Drag {
       let distanceX = currentX - that.startX,
         distanceY = currentY - that.startY;
 
+      speed = throttleCalculateSpeed(that, distanceX, distanceY) ?? speed;
 
       // 判断是否有需要进行吸附的水平线或垂直线
       if (
+        speed >= 20 ||
         !that.type ||
         (that.attachPos.diffH !== null &&
           Math.abs(
@@ -108,14 +136,6 @@ export default class Drag {
         });
         that.eventBus.dispatch("drag", [e]);
       } else {
-        console.log({
-          x: that.attachPos.nearLineH
-            ? that.attachPos.nearLineH - that.attachPos.diffH
-            : (that.sourceX + distanceX).toFixed(),
-          y: that.attachPos.nearLineV
-            ? that.attachPos.nearLineV - that.attachPos.diffV
-            : (that.sourceY + distanceY).toFixed(),
-        });
         setPosition(that.elem, {
           x: that.attachPos.nearLineH
             ? that.attachPos.nearLineH - that.attachPos.diffH

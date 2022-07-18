@@ -17,6 +17,8 @@ export const Home = () => {
 
   const newResize = useRef<any>(null);
   const newResize2 = useRef<any>(null);
+  const newResize3 = useRef<any>(null);
+  const newResize4 = useRef<any>(null);
   const bak = useRef<any>(null);
 
   useEffect(() => {
@@ -42,6 +44,26 @@ export const Home = () => {
           nearLineDistance: 10,
         }
       );
+      newResize3.current = new Rnd(
+        document.getElementById("jjking") as HTMLElement,
+        bak.current,
+        {
+          draggable: true,
+          resizable: true,
+          sensitive: 8,
+          nearLineDistance: 10,
+        }
+      );
+      newResize4.current = new Rnd(
+        document.getElementById("otto") as HTMLElement,
+        bak.current,
+        {
+          draggable: true,
+          resizable: true,
+          sensitive: 8,
+          nearLineDistance: 10,
+        }
+      );
     }
   }, []);
 
@@ -56,7 +78,7 @@ export const Home = () => {
           }}
         />
       </div>
-      <div id="bak" style={{ height: "900px", width: "900px" }}>
+      <div id="bak" style={{ height: "1200px", width: "900px" }}>
         <div id="xixi" style={{ height: "250px", width: "120px" }}>
           <rame-app
             src="https://tmpl-dev.tencent-cloud.com/content/components/home-carousel?footerID=undefined&columnID=undefined&showChangeThemeIcon=undefined&showEmailIcon=undefined&showMessageCenterIcon=undefined&showSearchInput=undefined&logo=undefined"
@@ -66,6 +88,22 @@ export const Home = () => {
           />
         </div>
         <div id="haha" style={{ height: "200px", width: "100px" }}>
+          <rame-app
+            src="https://tmpl-dev.tencent-cloud.com/content/components/home-carousel?footerID=undefined&columnID=undefined&showChangeThemeIcon=undefined&showEmailIcon=undefined&showMessageCenterIcon=undefined&showSearchInput=undefined&logo=undefined"
+            style={{
+              pointerEvents: "none",
+            }}
+          />
+        </div>
+        <div id="jjking" style={{ height: "200px", width: "100px" }}>
+          <rame-app
+            src="https://tmpl-dev.tencent-cloud.com/content/components/home-carousel?footerID=undefined&columnID=undefined&showChangeThemeIcon=undefined&showEmailIcon=undefined&showMessageCenterIcon=undefined&showSearchInput=undefined&logo=undefined"
+            style={{
+              pointerEvents: "none",
+            }}
+          />
+        </div>
+        <div id="otto" style={{ height: "200px", width: "100px" }}>
           <rame-app
             src="https://tmpl-dev.tencent-cloud.com/content/components/home-carousel?footerID=undefined&columnID=undefined&showChangeThemeIcon=undefined&showEmailIcon=undefined&showMessageCenterIcon=undefined&showSearchInput=undefined&logo=undefined"
             style={{

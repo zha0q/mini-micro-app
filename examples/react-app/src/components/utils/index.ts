@@ -12,6 +12,7 @@ import {
   setHeight,
   throttle,
   EventBus,
+  judgeContainWindow,
 } from "./utils";
 
 type LineT = "vt" | "vm" | "vb" | "hl" | "hm" | "hr";
@@ -235,14 +236,18 @@ export class Rnd {
     // 遍历所有line寻找到可能要进行吸附的一条水平线和一条垂直线
     lineT.forEach((l) => {
       const curLine = (this.box as any)[l];
+      this.bak.mayAttachLines[l] = this.bak.mayAttachLines[l]?.filter(
+        (line: Line) => judgeContainWindow(line)
+      );
       const nearLine =
         this.bak.mayAttachLines[l] && this.bak.mayAttachLines[l].length
-          ? this.bak.mayAttachLines[l].reduce((pre: any, cur: any) =>
-              Math.min(
-                // 找出最接近的一条 这里之前写成两个一样的对比，所以出现了 会同时出现两条线的情况
-                Math.abs(pre.pos - curLine.pos),
+          ? this.bak.mayAttachLines[l].reduce(
+              (pre: any, cur: any) =>
+                Math.abs(pre.pos - curLine.pos) <
                 Math.abs(cur.pos - curLine.pos)
-              )
+                  ? pre
+                  : cur
+              // 找出最接近的一条 这里之前写成两个一样的对比，所以出现了 会同时出现两条线的情况
             )
           : null;
       if (nearLine) {
@@ -281,7 +286,6 @@ export class Rnd {
       return;
     }
     this.bak.lines.disappear();
-
     this.showLines([nearLineH ?? undefined, nearLineV ?? undefined]);
 
     // 触发attach事件，交由drag组件进行是否贴合的判断

@@ -1,3 +1,5 @@
+import { Box, Line } from "./index.d";
+
 export function getStyle(elem: HTMLElement, style: any) {
   return (document.defaultView as any).getComputedStyle(elem, false)[style];
 }
@@ -42,15 +44,13 @@ export function setPosition(elem: HTMLElement, pos: any) {
   elem.style["transform"] = "translate(" + pos.x + "px, " + pos.y + "px)";
 }
 
-export function throttle(func: any, delay: number) {
+export function throttle(func: any, delay: number): any {
   let last = 0;
   return (...ctx: any) => {
-    console.log(ctx);
     var now = Date.now();
     if (now >= delay + last) {
-      console.log(now, delay, last);
-      func.call(...ctx);
       last = now;
+      return func.call(...ctx);
     }
   };
 }
@@ -77,4 +77,15 @@ export class EventBus {
       fn.call(this, ...args);
     });
   };
+}
+
+// 判断该线的宿主元素是否在视口之内
+export function judgeContainWindow(line: Line) {
+  const rect = (line.box as Box).instance.getBoundingClientRect();
+  return (
+    rect.x + rect.width >= 0 &&
+    rect.x <= document.documentElement.clientWidth &&
+    rect.y + rect.height >= 0 &&
+    rect.y <= document.documentElement.clientHeight
+  );
 }
