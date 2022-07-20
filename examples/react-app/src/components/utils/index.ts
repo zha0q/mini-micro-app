@@ -12,7 +12,12 @@ import {
   setHeight,
   throttle,
   EventBus,
-  judgeContainWindow,
+  observeContainWindow,
+  resolveCompactionCollision,
+  buildFakeItem,
+  addTransition,
+  removeTransition,
+  setStyle,
 } from "./utils";
 
 type LineT = "vt" | "vm" | "vb" | "hl" | "hm" | "hr";
@@ -22,13 +27,24 @@ const lineT = ["vt", "vm", "vb", "hl", "hm", "hr"];
 export class Bak {
   public lines: Lines;
   public mayAttachLines: any = {};
+  // 不在视口内的元素集合
+  public excludeWindowSet: WeakSet<HTMLElement> = new WeakSet();
+  public containRnd: Rnd[] = [];
   constructor(public elem: HTMLElement) {
     this.lines = new Lines();
     const svg = new Image(getWidth(this.elem), getHeight(this.elem));
     svg.src = grid;
+    svg.draggable = false;
+    svg.style.userSelect = "none";
     this.elem.appendChild(svg);
 
     this.elem.style.position = "relative";
+
+    this.elem.addEventListener("mousedown", () => {
+      this.containRnd.forEach((rnd) => {
+        rnd.resize?.disappear();
+      });
+    });
   }
 }
 
@@ -39,6 +55,7 @@ export class Rnd {
   public rndLocation: any = {};
 
   public eventBus: EventBus = new EventBus();
+  public fakeItem: any = null;
 
   constructor(
     public elem: HTMLElement,
@@ -51,41 +68,123 @@ export class Rnd {
       sensitive?: number;
     }
   ) {
+    console.log(elem);
     this.init();
   }
 
   init() {
+    // bak进行收集
+    this.bak.containRnd.push(this);
+
     if (!this.options.color) this.options.color = "red";
     if (!this.options.nearLineDistance) this.options.nearLineDistance = 0;
     if (!this.options.sensitive) this.options.sensitive = 0;
 
-    this.resize = new Resize(this.elem, this.eventBus, this.options.color);
+    // 监视元素是否在视口外并进行相应回调
+    const observerContainWindow = observeContainWindow(
+      () => this.bak.excludeWindowSet.add(this.elem),
+      () => this.bak.excludeWindowSet.delete(this.elem)
+    );
+    observerContainWindow.observe(this.elem);
+
+    //
+
+    // 元素样式初始化
+    setStyle(this.elem, {
+      position: "absolute",
+      left: "0",
+      top: "0",
+      zIndex: "100",
+    });
+
+    // 标线初始化
+    const lines = this.buildLines();
+    this.addLines(lines);
+    this.bak.lines.disappear();
+    this.hideUserSelect();
+
+    if (this.options.draggable) {
+      this.dragInit();
+    }
+    if (this.options.resizable) {
+      this.resizeInit();
+    }
+
+    // 元素被focus时 shape显性
+    this.eventBus.on("focus", (rnd: Rnd) => {
+      rnd.bak.containRnd.forEach((containedRnd) => {
+        if (rnd !== containedRnd) {
+          containedRnd.resize?.disappear();
+        }
+      });
+      rnd.resize?.shapesShow();
+    });
+
+    document.addEventListener("mouseup", (e) => this.bak.lines.disappear());
+  }
+
+  dragInit() {
     this.drag = new Drag(
       this.elem,
       this.eventBus,
       this.options.resizable,
       this.attach.bind(this)
     );
+    // drag 事件
+    this.eventBus.on("dragStart", () => {
+      removeTransition(this);
+      this.fakeItem !== null && this.bak.elem.removeChild(this.fakeItem);
+      this.fakeItem = buildFakeItem(this);
 
-    this.elem.style.position = "absolute";
-    this.elem.style.left = "0";
-    this.elem.style.top = "0";
-    this.elem.style.zIndex = "100";
-
-    const lines = this.buildLines();
-    this.addLines(lines);
-    const t: any = [];
-    this.bak.lines.disappear();
-    this.hideUserSelect();
+      this.eventBus.dispatch("focus", [this, this]);
+    });
 
     this.eventBus.on("drag", (e: MouseEvent) => {
       this.attach(e);
-    });
-    this.eventBus.on("resize", (e: MouseEvent) => {
       this.handleMoveLine();
+      this.resize?.setResize();
+
+      resolveCompactionCollision(this.bak.containRnd, this);
     });
 
-    document.addEventListener("mouseup", (e) => this.bak.lines.disappear());
+    this.eventBus.on("dragEnd", () => {
+      // 处理左键之外其他鼠标点击事件的边界条件
+      if (!this.fakeItem) return;
+      const fakeItemPosition = getPosition(this.fakeItem);
+      addTransition(this);
+      setPosition(this.elem, fakeItemPosition);
+      this.handleMoveLine();
+      this.resize?.setResize(fakeItemPosition);
+      this.bak.elem.removeChild(this.fakeItem);
+      this.fakeItem = null;
+    });
+  }
+
+  resizeInit() {
+    this.resize = new Resize(this.elem, this.eventBus, this.options.color);
+    // resize事件
+    this.eventBus.on("resizeStart", () => {
+      removeTransition(this);
+      this.fakeItem = buildFakeItem(this);
+
+      this.eventBus.dispatch("focus", [this, this]);
+    });
+
+    this.eventBus.on("resize", (e: MouseEvent) => {
+      this.handleMoveLine();
+
+      resolveCompactionCollision(this.bak.containRnd, this);
+    });
+
+    this.eventBus.on("resizeEnd", () => {
+      const fakeItemPosition = getPosition(this.fakeItem);
+      addTransition(this);
+      setPosition(this.elem, fakeItemPosition);
+      this.handleMoveLine();
+      this.resize?.setResize(fakeItemPosition);
+      this.bak.elem.removeChild(this.fakeItem);
+      this.fakeItem = null;
+    });
   }
 
   // 清除双击选中效果，增加用户体验
@@ -95,15 +194,17 @@ export class Rnd {
 
   createXLine(pos: number) {
     const xLine = document.createElement("div");
-    const rect = this.bak.elem.getBoundingClientRect();
-    xLine.style.display = "none";
-    xLine.style.width = "100%";
-    xLine.style.height = "1px";
-    xLine.style.backgroundColor = this.options.color as string;
-    xLine.style.position = "absolute";
-    xLine.style.top = "0";
-    xLine.style.left = "0";
-    xLine.style.zIndex = "1000";
+    setStyle(xLine, {
+      display: "none",
+      width: "100%",
+      height: "1px",
+      backgroundColor: this.options.color as string,
+      position: "absolute",
+      top: "0",
+      left: "0",
+      zIndex: "1000",
+    });
+
     setPosition(xLine, { x: 0, y: pos });
     this.bak.elem.appendChild(xLine);
     return xLine;
@@ -111,15 +212,16 @@ export class Rnd {
 
   createYLine(pos: number) {
     const yLine = document.createElement("div");
-    const rect = this.bak.elem.getBoundingClientRect();
-    yLine.style.display = "none";
-    yLine.style.width = "1px";
-    yLine.style.height = "100%";
-    yLine.style.backgroundColor = this.options.color as string;
-    yLine.style.position = "absolute";
-    yLine.style.top = "0";
-    yLine.style.left = "0";
-    yLine.style.zIndex = "1000";
+    setStyle(yLine, {
+      display: "none",
+      width: "100%",
+      height: "1px",
+      backgroundColor: this.options.color as string,
+      position: "absolute",
+      top: "0",
+      left: "0",
+      zIndex: "1000",
+    });
     setPosition(yLine, { x: pos, y: 0 });
     this.bak.elem.appendChild(yLine);
     return yLine;
@@ -236,8 +338,10 @@ export class Rnd {
     // 遍历所有line寻找到可能要进行吸附的一条水平线和一条垂直线
     lineT.forEach((l) => {
       const curLine = (this.box as any)[l];
+      // 过滤掉不在视口中的元素
       this.bak.mayAttachLines[l] = this.bak.mayAttachLines[l]?.filter(
-        (line: Line) => judgeContainWindow(line)
+        (line: Line) =>
+          !this.bak.excludeWindowSet.has(line.box?.instance as HTMLElement)
       );
       const nearLine =
         this.bak.mayAttachLines[l] && this.bak.mayAttachLines[l].length
@@ -281,8 +385,6 @@ export class Rnd {
       (nearLineH && nearLineH.pos - curLineH.pos >= sensitive) ||
       (nearLineV && nearLineV.pos - curLineV.pos >= sensitive)
     ) {
-      this.handleMoveLine();
-      this.resize?.setResize();
       return;
     }
     this.bak.lines.disappear();
@@ -306,8 +408,5 @@ export class Rnd {
         this.bak.lines.disappear();
       },
     ]);
-
-    this.resize?.setResize();
-    this.handleMoveLine();
   }
 }

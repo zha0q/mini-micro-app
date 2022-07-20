@@ -96,6 +96,10 @@ export default class Drag {
         200
       );
 
+      that.eventBus.dispatch("dragStart", []);
+
+      console.log("drag");
+      document.addEventListener("contextmenu", end);
       document.addEventListener("mousemove", move);
       document.addEventListener("mouseup", end);
 
@@ -153,33 +157,14 @@ export default class Drag {
     }
 
     function end() {
+      that.eventBus.dispatch("dragEnd", []);
+      document.removeEventListener("contextmenu", end);
       document.removeEventListener("mousemove", move);
       document.removeEventListener("mouseup", end);
     }
   }
 
   addCursor() {
-    this.elem.addEventListener("mousemove", (e: MouseEvent) => {
-      const pos = getPosition(this.elem);
-      const movePos = {
-        startX: e.pageX,
-        startY: e.pageY,
-        rect: this.elem.getBoundingClientRect(),
-        sourceWidth: getWidth(this.elem),
-        sourceHeight: getHeight(this.elem),
-        sourceX: pos.x,
-        sourceY: pos.y,
-      };
-
-      if (
-        Math.abs(movePos.startX - movePos.rect.x - movePos.sourceWidth) <= 6 ||
-        Math.abs(movePos.startX - movePos.rect.x) <= 6 ||
-        Math.abs(movePos.startY - movePos.rect.y) <= 6 ||
-        Math.abs(movePos.startY - movePos.rect.y - movePos.sourceHeight) <= 6
-      ) {
-        return;
-      }
-      this.elem.style.cursor = "move";
-    });
+    this.elem.style.cursor = "move";
   }
 }

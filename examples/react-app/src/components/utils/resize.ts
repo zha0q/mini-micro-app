@@ -72,7 +72,6 @@ export default class Resize {
     const move = (e: MouseEvent) => {
       let distanceX = e.pageX - this.startX;
       let currentX = this.sourceX + distanceX;
-      console.log(distanceX);
       if (this.sourceWidth - distanceX >= this.minHeight) {
         this.resize(
           e,
@@ -83,10 +82,13 @@ export default class Resize {
       }
     };
 
-    function end() {
+    const end = () => {
+      this.eventBus.dispatch("resizeEnd", []);
+      document.removeEventListener("contextmenu", end);
       document.removeEventListener("mousemove", move);
       document.removeEventListener("mouseup", end);
-    }
+    };
+    document.addEventListener("contextmenu", end);
     document.addEventListener("mousemove", move);
     document.addEventListener("mouseup", end);
   };
@@ -95,7 +97,6 @@ export default class Resize {
     const move = (e: any) => {
       let distanceY = e.pageY - this.startY;
       let currentY = this.sourceY + distanceY;
-      console.log(this.sourceX, this.sourceY, currentY);
       if (this.sourceHeight - distanceY >= this.minWidth) {
         this.resize(
           e,
@@ -106,10 +107,13 @@ export default class Resize {
       }
     };
 
-    function end() {
+    const end = () => {
+      this.eventBus.dispatch("resizeEnd", []);
+      document.removeEventListener("contextmenu", end);
       document.removeEventListener("mousemove", move);
       document.removeEventListener("mouseup", end);
-    }
+    };
+    document.addEventListener("contextmenu", end);
     document.addEventListener("mousemove", move);
     document.addEventListener("mouseup", end);
   };
@@ -127,10 +131,13 @@ export default class Resize {
       }
     };
 
-    function end() {
+    const end = () => {
+      this.eventBus.dispatch("resizeEnd", []);
+      document.removeEventListener("contextmenu", end);
       document.removeEventListener("mousemove", move);
       document.removeEventListener("mouseup", end);
-    }
+    };
+    document.addEventListener("contextmenu", end);
     document.addEventListener("mousemove", move);
     document.addEventListener("mouseup", end);
   };
@@ -148,10 +155,13 @@ export default class Resize {
       }
     };
 
-    function end() {
+    const end = () => {
+      this.eventBus.dispatch("resizeEnd", []);
+      document.removeEventListener("contextmenu", end);
       document.removeEventListener("mousemove", move);
       document.removeEventListener("mouseup", end);
-    }
+    };
+    document.addEventListener("contextmenu", end);
     document.addEventListener("mousemove", move);
     document.addEventListener("mouseup", end);
   };
@@ -175,10 +185,13 @@ export default class Resize {
       }
     };
 
-    function end() {
+    const end = () => {
+      this.eventBus.dispatch("resizeEnd", []);
+      document.removeEventListener("contextmenu", end);
       document.removeEventListener("mousemove", move);
       document.removeEventListener("mouseup", end);
-    }
+    };
+    document.addEventListener("contextmenu", end);
     document.addEventListener("mousemove", move);
     document.addEventListener("mouseup", end);
   };
@@ -201,10 +214,13 @@ export default class Resize {
       }
     };
 
-    function end() {
+    const end = () => {
+      this.eventBus.dispatch("resizeEnd", []);
+      document.removeEventListener("contextmenu", end);
       document.removeEventListener("mousemove", move);
       document.removeEventListener("mouseup", end);
-    }
+    };
+    document.addEventListener("contextmenu", end);
     document.addEventListener("mousemove", move);
     document.addEventListener("mouseup", end);
   };
@@ -226,10 +242,13 @@ export default class Resize {
       }
     };
 
-    function end() {
+    const end = () => {
+      this.eventBus.dispatch("resizeEnd", []);
+      document.removeEventListener("contextmenu", end);
       document.removeEventListener("mousemove", move);
       document.removeEventListener("mouseup", end);
-    }
+    };
+    document.addEventListener("contextmenu", end);
     document.addEventListener("mousemove", move);
     document.addEventListener("mouseup", end);
   };
@@ -252,10 +271,14 @@ export default class Resize {
       }
     };
 
-    function end() {
+    const end = () => {
+      this.eventBus.dispatch("resizeEnd", []);
+
+      document.removeEventListener("contextmenu", end);
       document.removeEventListener("mousemove", move);
       document.removeEventListener("mouseup", end);
-    }
+    };
+    document.addEventListener("contextmenu", end);
     document.addEventListener("mousemove", move);
     document.addEventListener("mouseup", end);
   };
@@ -280,6 +303,8 @@ export default class Resize {
         let pos = getPosition(this.elem);
         this.sourceX = pos.x;
         this.sourceY = pos.y;
+
+        this.eventBus.dispatch("resizeStart", []);
       });
 
       this.elem.parentNode.appendChild(shape);
@@ -289,6 +314,7 @@ export default class Resize {
     });
 
     this.setResize();
+    this.disappear();
 
     // 为shape添加事件
     this.shapes[0].addEventListener("mousedown", this.resizeTL);
@@ -305,10 +331,11 @@ export default class Resize {
     el.style.cursor = cursor;
   }
 
-  setResize() {
+  setResize(incomingPosition?: { x: number; y: number }) {
     const width = getWidth(this.elem);
     const height = getHeight(this.elem);
-    let pos = getPosition(this.elem);
+    let pos = incomingPosition ?? getPosition(this.elem);
+
     setPosition(this.shapes[0], { x: pos.x - 2, y: pos.y - 2 });
     setPosition(this.shapes[1], {
       x: pos.x + width / 2 - 2,
@@ -337,6 +364,19 @@ export default class Resize {
     setPosition(this.shapes[7], {
       x: pos.x - 2,
       y: pos.y + height / 2 - 2,
+    });
+  }
+
+  shapesShow() {
+    this.shapes.forEach((shape: HTMLElement) => {
+      shape.style.display = "block";
+    });
+    console.log(this.shapes);
+  }
+
+  disappear() {
+    this.shapes.forEach((shape: HTMLElement) => {
+      shape.style.display = "none";
     });
   }
 }
