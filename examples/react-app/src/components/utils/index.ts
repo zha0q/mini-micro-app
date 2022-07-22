@@ -1,4 +1,4 @@
-import { Line, Box } from "./index.d";
+import { Line, Box, Layout } from "./index.d";
 import Drag from "./drag";
 import Lines from "./lines";
 import Resize from "./resize";
@@ -32,11 +32,11 @@ export class Bak {
   public containRnd: Rnd[] = [];
   constructor(public elem: HTMLElement) {
     this.lines = new Lines();
-    const svg = new Image(getWidth(this.elem), getHeight(this.elem));
-    svg.src = grid;
-    svg.draggable = false;
-    svg.style.userSelect = "none";
-    this.elem.appendChild(svg);
+    // const svg = new Image(getWidth(this.elem), getHeight(this.elem));
+    // svg.src = grid;
+    // svg.draggable = false;
+    // svg.style.userSelect = 'none';
+    // this.elem.appendChild(svg);
 
     this.elem.style.position = "relative";
 
@@ -61,6 +61,12 @@ export class Rnd {
     public elem: HTMLElement,
     public bak: Bak,
     public options: {
+      default: {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+      };
       draggable: boolean;
       resizable: boolean;
       color?: string;
@@ -68,7 +74,11 @@ export class Rnd {
       sensitive?: number;
     }
   ) {
-    console.log(elem);
+    let flag = false;
+    this.bak.containRnd.forEach((rnd) => {
+      flag = flag || rnd.elem.id === this.elem.id;
+    });
+    if (flag) return;
     this.init();
   }
 
@@ -95,7 +105,15 @@ export class Rnd {
       left: "0",
       top: "0",
       zIndex: "100",
+      transform: `translate(${this.options.default.x}px, ${this.options.default.y}px)`,
+      width: `${this.options.default.width}px`,
+      height: `${this.options.default.height}px`,
     });
+
+    (this.elem as any).layout = {
+      x: this.options.default.x,
+      y: this.options.default.y,
+    };
 
     // 标线初始化
     const lines = this.buildLines();
@@ -121,6 +139,19 @@ export class Rnd {
     });
 
     document.addEventListener("mouseup", (e) => this.bak.lines.disappear());
+
+    // 初始化处理碰撞
+    this.fakeItem = buildFakeItem(this);
+    resolveCompactionCollision(this.bak.containRnd, this);
+    const fakeItemPosition = getPosition(this.fakeItem);
+    setPosition(this.elem, fakeItemPosition);
+    this.handleMoveLine();
+    this.resize?.setResize(fakeItemPosition);
+    this.bak.elem.removeChild(this.fakeItem);
+    this.fakeItem = null;
+
+    // 添加动画
+    addTransition(this);
   }
 
   dragInit() {
@@ -214,8 +245,8 @@ export class Rnd {
     const yLine = document.createElement("div");
     setStyle(yLine, {
       display: "none",
-      width: "100%",
-      height: "1px",
+      width: "1px",
+      height: "100%",
       backgroundColor: this.options.color as string,
       position: "absolute",
       top: "0",
@@ -321,13 +352,13 @@ export class Rnd {
     this.addLines(lines);
   }
 
-  showLines(tLines: Line[]) {
-    tLines.forEach((line) => {
-      if (line) line.instance.style.display = "block";
-    });
-  }
-
   attach(e: MouseEvent) {
+    const showLines = (tLines: Line[]) => {
+      tLines.forEach((line) => {
+        if (line) line.instance.style.display = "block";
+      });
+    };
+
     const sensitive = this.options.sensitive ? this.options.sensitive : 6;
     const curPos = getPosition(this.elem);
     let curLineH: any = null,
@@ -343,17 +374,15 @@ export class Rnd {
         (line: Line) =>
           !this.bak.excludeWindowSet.has(line.box?.instance as HTMLElement)
       );
-      const nearLine =
-        this.bak.mayAttachLines[l] && this.bak.mayAttachLines[l].length
-          ? this.bak.mayAttachLines[l].reduce(
-              (pre: any, cur: any) =>
-                Math.abs(pre.pos - curLine.pos) <
-                Math.abs(cur.pos - curLine.pos)
-                  ? pre
-                  : cur
-              // 找出最接近的一条 这里之前写成两个一样的对比，所以出现了 会同时出现两条线的情况
-            )
-          : null;
+      const nearLine = this.bak.mayAttachLines[l]?.length
+        ? this.bak.mayAttachLines[l].reduce(
+            (pre: any, cur: any) =>
+              Math.abs(pre.pos - curLine.pos) < Math.abs(cur.pos - curLine.pos)
+                ? pre
+                : cur
+            // 找出最接近的一条 这里之前写成两个一样的对比，所以出现了 会同时出现两条线的情况
+          )
+        : null;
       if (nearLine) {
         switch (curLine.type) {
           case "H":
@@ -380,6 +409,8 @@ export class Rnd {
       }
     });
 
+    // 先将所有line隐藏，然后再判断是否要显示线
+    this.bak.lines.disappear();
     if (
       (!nearLineH && !nearLineV) ||
       (nearLineH && nearLineH.pos - curLineH.pos >= sensitive) ||
@@ -387,8 +418,7 @@ export class Rnd {
     ) {
       return;
     }
-    this.bak.lines.disappear();
-    this.showLines([nearLineH ?? undefined, nearLineV ?? undefined]);
+    showLines([nearLineH ?? undefined, nearLineV ?? undefined]);
 
     // 触发attach事件，交由drag组件进行是否贴合的判断
     this.eventBus.dispatch("attach", [

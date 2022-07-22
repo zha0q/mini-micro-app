@@ -24,46 +24,70 @@ export const Home = () => {
   useEffect(() => {
     if (!newResize3.current) {
       bak.current = new Bak(document.getElementById("bak") as HTMLElement);
-      // newResize.current = new Rnd(
-      //   document.getElementById("xixi") as HTMLElement,
-      //   bak.current,
-      //   {
-      //     draggable: true,
-      //     resizable: true,
-      //     sensitive: 8,
-      //     nearLineDistance: 10,
-      //   }
-      // );
-      // newResize2.current = new Rnd(
-      //   document.getElementById("haha") as HTMLElement,
-      //   bak.current,
-      //   {
-      //     draggable: true,
-      //     resizable: true,
-      //     sensitive: 8,
-      //     nearLineDistance: 10,
-      //   }
-      // );
-      newResize3.current = new Rnd(
-        document.getElementById("jjking") as HTMLElement,
+      newResize.current = new Rnd(
+        document.getElementById("xixi") as HTMLElement,
         bak.current,
         {
-          draggable: false,
-          resizable: false,
-          sensitive: 8,
-          nearLineDistance: 10,
-        }
-      );
-      newResize4.current = new Rnd(
-        document.getElementById("otto") as HTMLElement,
-        bak.current,
-        {
+          default: {
+            x: 0,
+            y: 200,
+            height: 100,
+            width: 100,
+          },
           draggable: true,
           resizable: true,
           sensitive: 8,
           nearLineDistance: 10,
         }
       );
+      newResize2.current = new Rnd(
+        document.getElementById("haha") as HTMLElement,
+        bak.current,
+        {
+          default: {
+            x: 200,
+            y: 400,
+            height: 100,
+            width: 100,
+          },
+          draggable: true,
+          resizable: true,
+          sensitive: 8,
+          nearLineDistance: 10,
+        }
+      );
+      newResize3.current = new Rnd(
+        document.getElementById("jjking") as HTMLElement,
+        bak.current,
+        {
+          default: {
+            x: 400,
+            y: 600,
+            height: 100,
+            width: 100,
+          },
+          draggable: true,
+          resizable: true,
+          sensitive: 8,
+          nearLineDistance: 10,
+        }
+      );
+        newResize4.current = new Rnd(
+          document.getElementById("otto") as HTMLElement,
+          bak.current,
+          {
+            default: {
+              x: 600,
+              y: 800,
+              height: 100,
+              width: 100,
+            },
+            draggable: true,
+            resizable: true,
+            sensitive: 8,
+            nearLineDistance: 10,
+          }
+        );
     }
   }, []);
 
@@ -79,9 +103,9 @@ export const Home = () => {
         />
       </div>
       <div id="bak" style={{ height: "1200px", width: "900px" }}>
-        {/* <div id="xixi" style={{ height: "250px", width: "120px" }}>
+        <div id="xixi" style={{ height: "250px", width: "120px" }}>
           <rame-app
-            src="https://tmpl-dev.tencent-cloud.com/content/components/home-carousel?footerID=undefined&columnID=undefined&showChangeThemeIcon=undefined&showEmailIcon=undefined&showMessageCenterIcon=undefined&showSearchInput=undefined&logo=undefined"
+            src="https://tmpl-dev.tencent-cloud.com/primary/home"
             style={{
               pointerEvents: "none",
             }}
@@ -89,13 +113,13 @@ export const Home = () => {
         </div>
         <div id="haha" style={{ height: "200px", width: "100px" }}>
           <rame-app
-            src="https://tmpl-dev.tencent-cloud.com/content/components/home-carousel?footerID=undefined&columnID=undefined&showChangeThemeIcon=undefined&showEmailIcon=undefined&showMessageCenterIcon=undefined&showSearchInput=undefined&logo=undefined"
+            src="https://tmpl-dev.tencent-cloud.com/primary/home"
             style={{
               pointerEvents: "none",
             }}
           />
-        </div> */}
-        <div id="jjking" style={{ height: "200px", width: "100px" }}>
+        </div>
+        <div id="jjking">
           <rame-app
             src="https://tmpl-dev.tencent-cloud.com/content/components/home-carousel?footerID=undefined&columnID=undefined&showChangeThemeIcon=undefined&showEmailIcon=undefined&showMessageCenterIcon=undefined&showSearchInput=undefined&logo=undefined"
             style={{
@@ -103,14 +127,7 @@ export const Home = () => {
             }}
           />
         </div>
-        <div
-          id="otto"
-          style={{
-            height: "200px",
-            width: "100px",
-            transform: "translate(300px, 100px)",
-          }}
-        >
+        <div id="otto">
           <rame-app
             src="https://tmpl-dev.tencent-cloud.com/content/components/home-carousel?footerID=undefined&columnID=undefined&showChangeThemeIcon=undefined&showEmailIcon=undefined&showMessageCenterIcon=undefined&showSearchInput=undefined&logo=undefined"
             style={{

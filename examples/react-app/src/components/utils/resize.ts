@@ -7,7 +7,8 @@ import {
   setPosition,
   setWidth,
   EventBus,
-} from "./utils";
+  setStyle,
+} from './utils';
 
 type Options = {
   clientX: number;
@@ -17,14 +18,14 @@ type Options = {
 };
 
 const cursors = [
-  "nw-resize",
-  "n-resize",
-  "ne-resize",
-  "e-resize",
-  "se-resize",
-  "s-resize",
-  "sw-resize",
-  "w-resize",
+  'nw-resize',
+  'n-resize',
+  'ne-resize',
+  'e-resize',
+  'se-resize',
+  's-resize',
+  'sw-resize',
+  'w-resize',
 ];
 
 export default class Resize {
@@ -41,12 +42,10 @@ export default class Resize {
   minWidth = 10;
   minHeight = 10;
 
-  onResizeStop: any = () => {};
-
   constructor(
     selector: any,
     public eventBus: EventBus,
-    public shapeColor: any
+    public shapeColor: any,
   ) {
     this.elem = selector;
 
@@ -65,113 +64,113 @@ export default class Resize {
 
     this.setResize();
 
-    this.eventBus.dispatch("resize", [e]);
+    this.eventBus.dispatch('resize', [e]);
   }
 
   resizeL = (e: MouseEvent) => {
     const move = (e: MouseEvent) => {
-      let distanceX = e.pageX - this.startX;
-      let currentX = this.sourceX + distanceX;
+      const distanceX = e.pageX - this.startX;
+      const currentX = this.sourceX + distanceX;
       if (this.sourceWidth - distanceX >= this.minHeight) {
         this.resize(
           e,
           { x: currentX, y: this.sourceY },
           this.sourceWidth - distanceX,
-          this.sourceHeight
+          this.sourceHeight,
         );
       }
     };
 
     const end = () => {
-      this.eventBus.dispatch("resizeEnd", []);
-      document.removeEventListener("contextmenu", end);
-      document.removeEventListener("mousemove", move);
-      document.removeEventListener("mouseup", end);
+      this.eventBus.dispatch('resizeEnd', []);
+      document.removeEventListener('contextmenu', end);
+      document.removeEventListener('mousemove', move);
+      document.removeEventListener('mouseup', end);
     };
-    document.addEventListener("contextmenu", end);
-    document.addEventListener("mousemove", move);
-    document.addEventListener("mouseup", end);
+    document.addEventListener('contextmenu', end);
+    document.addEventListener('mousemove', move);
+    document.addEventListener('mouseup', end);
   };
 
   resizeT = (e: MouseEvent) => {
     const move = (e: any) => {
-      let distanceY = e.pageY - this.startY;
-      let currentY = this.sourceY + distanceY;
+      const distanceY = e.pageY - this.startY;
+      const currentY = this.sourceY + distanceY;
       if (this.sourceHeight - distanceY >= this.minWidth) {
         this.resize(
           e,
           { x: this.sourceX, y: currentY },
           this.sourceWidth,
-          this.sourceHeight - distanceY
+          this.sourceHeight - distanceY,
         );
       }
     };
 
     const end = () => {
-      this.eventBus.dispatch("resizeEnd", []);
-      document.removeEventListener("contextmenu", end);
-      document.removeEventListener("mousemove", move);
-      document.removeEventListener("mouseup", end);
+      this.eventBus.dispatch('resizeEnd', []);
+      document.removeEventListener('contextmenu', end);
+      document.removeEventListener('mousemove', move);
+      document.removeEventListener('mouseup', end);
     };
-    document.addEventListener("contextmenu", end);
-    document.addEventListener("mousemove", move);
-    document.addEventListener("mouseup", end);
+    document.addEventListener('contextmenu', end);
+    document.addEventListener('mousemove', move);
+    document.addEventListener('mouseup', end);
   };
 
   resizeR = (e: MouseEvent) => {
     const move = (e: MouseEvent) => {
-      let distanceX = e.pageX - this.startX;
+      const distanceX = e.pageX - this.startX;
       if (this.sourceWidth + distanceX >= this.minHeight) {
         this.resize(
           e,
           { x: this.sourceX, y: this.sourceY },
           this.sourceWidth + distanceX,
-          this.sourceHeight
+          this.sourceHeight,
         );
       }
     };
 
     const end = () => {
-      this.eventBus.dispatch("resizeEnd", []);
-      document.removeEventListener("contextmenu", end);
-      document.removeEventListener("mousemove", move);
-      document.removeEventListener("mouseup", end);
+      this.eventBus.dispatch('resizeEnd', []);
+      document.removeEventListener('contextmenu', end);
+      document.removeEventListener('mousemove', move);
+      document.removeEventListener('mouseup', end);
     };
-    document.addEventListener("contextmenu", end);
-    document.addEventListener("mousemove", move);
-    document.addEventListener("mouseup", end);
+    document.addEventListener('contextmenu', end);
+    document.addEventListener('mousemove', move);
+    document.addEventListener('mouseup', end);
   };
 
   resizeB = (e: MouseEvent) => {
     const move = (e: MouseEvent) => {
-      let distanceY = e.pageY - this.startY;
+      const distanceY = e.pageY - this.startY;
       if (this.sourceHeight + distanceY >= this.minWidth) {
         this.resize(
           e,
           { x: this.sourceX, y: this.sourceY },
           this.sourceWidth,
-          this.sourceHeight + distanceY
+          this.sourceHeight + distanceY,
         );
       }
     };
 
     const end = () => {
-      this.eventBus.dispatch("resizeEnd", []);
-      document.removeEventListener("contextmenu", end);
-      document.removeEventListener("mousemove", move);
-      document.removeEventListener("mouseup", end);
+      this.eventBus.dispatch('resizeEnd', []);
+      document.removeEventListener('contextmenu', end);
+      document.removeEventListener('mousemove', move);
+      document.removeEventListener('mouseup', end);
     };
-    document.addEventListener("contextmenu", end);
-    document.addEventListener("mousemove", move);
-    document.addEventListener("mouseup", end);
+    document.addEventListener('contextmenu', end);
+    document.addEventListener('mousemove', move);
+    document.addEventListener('mouseup', end);
   };
 
   resizeTL = (e: MouseEvent) => {
     const move = (e: MouseEvent) => {
-      let distanceX = e.pageX - this.startX;
-      let currentX = this.sourceX + distanceX;
-      let distanceY = e.pageY - this.startY;
-      let currentY = this.sourceY + distanceY;
+      const distanceX = e.pageX - this.startX;
+      const currentX = this.sourceX + distanceX;
+      const distanceY = e.pageY - this.startY;
+      const currentY = this.sourceY + distanceY;
       if (
         this.sourceWidth - distanceX >= this.minHeight &&
         this.sourceHeight - distanceY >= this.minWidth
@@ -180,27 +179,27 @@ export default class Resize {
           e,
           { x: currentX, y: currentY },
           this.sourceWidth - distanceX,
-          this.sourceHeight - distanceY
+          this.sourceHeight - distanceY,
         );
       }
     };
 
     const end = () => {
-      this.eventBus.dispatch("resizeEnd", []);
-      document.removeEventListener("contextmenu", end);
-      document.removeEventListener("mousemove", move);
-      document.removeEventListener("mouseup", end);
+      this.eventBus.dispatch('resizeEnd', []);
+      document.removeEventListener('contextmenu', end);
+      document.removeEventListener('mousemove', move);
+      document.removeEventListener('mouseup', end);
     };
-    document.addEventListener("contextmenu", end);
-    document.addEventListener("mousemove", move);
-    document.addEventListener("mouseup", end);
+    document.addEventListener('contextmenu', end);
+    document.addEventListener('mousemove', move);
+    document.addEventListener('mouseup', end);
   };
 
   resizeTR = (e: MouseEvent) => {
     const move = (e: MouseEvent) => {
-      let distanceX = e.pageX - this.startX;
-      let distanceY = e.pageY - this.startY;
-      let currentY = this.sourceY + distanceY;
+      const distanceX = e.pageX - this.startX;
+      const distanceY = e.pageY - this.startY;
+      const currentY = this.sourceY + distanceY;
       if (
         this.sourceWidth + distanceX >= this.minHeight &&
         this.sourceHeight - distanceY >= this.minWidth
@@ -209,26 +208,26 @@ export default class Resize {
           e,
           { x: this.sourceX, y: currentY },
           this.sourceWidth + distanceX,
-          this.sourceHeight - distanceY
+          this.sourceHeight - distanceY,
         );
       }
     };
 
     const end = () => {
-      this.eventBus.dispatch("resizeEnd", []);
-      document.removeEventListener("contextmenu", end);
-      document.removeEventListener("mousemove", move);
-      document.removeEventListener("mouseup", end);
+      this.eventBus.dispatch('resizeEnd', []);
+      document.removeEventListener('contextmenu', end);
+      document.removeEventListener('mousemove', move);
+      document.removeEventListener('mouseup', end);
     };
-    document.addEventListener("contextmenu", end);
-    document.addEventListener("mousemove", move);
-    document.addEventListener("mouseup", end);
+    document.addEventListener('contextmenu', end);
+    document.addEventListener('mousemove', move);
+    document.addEventListener('mouseup', end);
   };
 
   resizeBR = (e: MouseEvent) => {
     const move = (e: MouseEvent) => {
-      let distanceX = e.pageX - this.startX;
-      let distanceY = e.pageY - this.startY;
+      const distanceX = e.pageX - this.startX;
+      const distanceY = e.pageY - this.startY;
       if (
         this.sourceWidth + distanceX >= this.minHeight &&
         this.sourceHeight + distanceY >= this.minWidth
@@ -237,27 +236,27 @@ export default class Resize {
           e,
           { x: this.sourceX, y: this.sourceY },
           this.sourceWidth + distanceX,
-          this.sourceHeight + distanceY
+          this.sourceHeight + distanceY,
         );
       }
     };
 
     const end = () => {
-      this.eventBus.dispatch("resizeEnd", []);
-      document.removeEventListener("contextmenu", end);
-      document.removeEventListener("mousemove", move);
-      document.removeEventListener("mouseup", end);
+      this.eventBus.dispatch('resizeEnd', []);
+      document.removeEventListener('contextmenu', end);
+      document.removeEventListener('mousemove', move);
+      document.removeEventListener('mouseup', end);
     };
-    document.addEventListener("contextmenu", end);
-    document.addEventListener("mousemove", move);
-    document.addEventListener("mouseup", end);
+    document.addEventListener('contextmenu', end);
+    document.addEventListener('mousemove', move);
+    document.addEventListener('mouseup', end);
   };
 
   resizeBL = (e: MouseEvent) => {
     const move = (e: MouseEvent) => {
-      let distanceX = e.pageX - this.startX;
-      let currentX = this.sourceX + distanceX;
-      let distanceY = e.pageY - this.startY;
+      const distanceX = e.pageX - this.startX;
+      const currentX = this.sourceX + distanceX;
+      const distanceY = e.pageY - this.startY;
       if (
         this.sourceWidth - distanceX >= this.minHeight &&
         this.sourceHeight + distanceY >= this.minWidth
@@ -266,49 +265,56 @@ export default class Resize {
           e,
           { x: currentX, y: this.sourceY },
           this.sourceWidth - distanceX,
-          this.sourceHeight + distanceY
+          this.sourceHeight + distanceY,
         );
       }
     };
 
     const end = () => {
-      this.eventBus.dispatch("resizeEnd", []);
+      this.eventBus.dispatch('resizeEnd', []);
 
-      document.removeEventListener("contextmenu", end);
-      document.removeEventListener("mousemove", move);
-      document.removeEventListener("mouseup", end);
+      document.removeEventListener('contextmenu', end);
+      document.removeEventListener('mousemove', move);
+      document.removeEventListener('mouseup', end);
     };
-    document.addEventListener("contextmenu", end);
-    document.addEventListener("mousemove", move);
-    document.addEventListener("mouseup", end);
+    document.addEventListener('contextmenu', end);
+    document.addEventListener('mousemove', move);
+    document.addEventListener('mouseup', end);
   };
 
   initResize() {
+    const addCursor = (el: HTMLElement, cursor: string) => {
+      el.style.cursor = cursor;
+    };
+
     this.shapes = new Array(8).fill(null).map((v, i) => {
-      const shape = document.createElement("div");
-      shape.style.position = "absolute";
-      shape.style.left = "0";
-      shape.style.top = "0";
-      shape.style.zIndex = "10000";
-      shape.style.height = "4px";
-      shape.style.width = "4px";
-      shape.style.border = `1px ${this.shapeColor} solid`;
-      shape.style.borderRadius = "4px";
+      const shape = document.createElement('div');
+      setStyle(shape, {
+        position: 'absolute',
+        left: '0',
+        top: '0',
+        zIndex: '10000',
+        height: '4px',
+        width: '4px',
+        border: `1px ${this.shapeColor} solid`,
+        borderRadius: '4px',
+      });
+
       // 添加点击事件
-      shape.addEventListener("mousedown", (e) => {
+      shape.addEventListener('mousedown', (e) => {
         this.startX = e.pageX;
         this.startY = e.pageY;
         this.sourceWidth = getWidth(this.elem);
         this.sourceHeight = getHeight(this.elem);
-        let pos = getPosition(this.elem);
+        const pos = getPosition(this.elem);
         this.sourceX = pos.x;
         this.sourceY = pos.y;
 
-        this.eventBus.dispatch("resizeStart", []);
+        this.eventBus.dispatch('resizeStart', []);
       });
 
       this.elem.parentNode.appendChild(shape);
-      this.addCursor(shape as HTMLElement, cursors[i]);
+      addCursor(shape as HTMLElement, cursors[i]);
 
       return shape;
     });
@@ -317,24 +323,20 @@ export default class Resize {
     this.disappear();
 
     // 为shape添加事件
-    this.shapes[0].addEventListener("mousedown", this.resizeTL);
-    this.shapes[1].addEventListener("mousedown", this.resizeT);
-    this.shapes[2].addEventListener("mousedown", this.resizeTR);
-    this.shapes[3].addEventListener("mousedown", this.resizeR);
-    this.shapes[4].addEventListener("mousedown", this.resizeBR);
-    this.shapes[5].addEventListener("mousedown", this.resizeB);
-    this.shapes[6].addEventListener("mousedown", this.resizeBL);
-    this.shapes[7].addEventListener("mousedown", this.resizeL);
-  }
-
-  addCursor(el: HTMLElement, cursor: string) {
-    el.style.cursor = cursor;
+    this.shapes[0].addEventListener('mousedown', this.resizeTL);
+    this.shapes[1].addEventListener('mousedown', this.resizeT);
+    this.shapes[2].addEventListener('mousedown', this.resizeTR);
+    this.shapes[3].addEventListener('mousedown', this.resizeR);
+    this.shapes[4].addEventListener('mousedown', this.resizeBR);
+    this.shapes[5].addEventListener('mousedown', this.resizeB);
+    this.shapes[6].addEventListener('mousedown', this.resizeBL);
+    this.shapes[7].addEventListener('mousedown', this.resizeL);
   }
 
   setResize(incomingPosition?: { x: number; y: number }) {
     const width = getWidth(this.elem);
     const height = getHeight(this.elem);
-    let pos = incomingPosition ?? getPosition(this.elem);
+    const pos = incomingPosition ?? getPosition(this.elem);
 
     setPosition(this.shapes[0], { x: pos.x - 2, y: pos.y - 2 });
     setPosition(this.shapes[1], {
@@ -369,14 +371,13 @@ export default class Resize {
 
   shapesShow() {
     this.shapes.forEach((shape: HTMLElement) => {
-      shape.style.display = "block";
+      shape.style.display = 'block';
     });
-    console.log(this.shapes);
   }
 
   disappear() {
     this.shapes.forEach((shape: HTMLElement) => {
-      shape.style.display = "none";
+      shape.style.display = 'none';
     });
   }
 }

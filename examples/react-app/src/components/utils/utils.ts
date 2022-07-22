@@ -1,4 +1,4 @@
-import { Rnd } from ".";
+import { Rnd } from "./index";
 import { Box, Line } from "./index.d";
 
 export function getStyle(elem: HTMLElement, style: any) {
@@ -13,7 +13,7 @@ export function setStyle(elem: HTMLElement, config: any) {
 
 export function getPosition(elem: HTMLElement) {
   let pos = { x: 0, y: 0 };
-  let transformValue = getStyle(elem, "transform");
+  const transformValue = getStyle(elem, "transform");
   if (transformValue == "none") {
     elem.style["transform"] = "translate(0, 0)";
   } else {
@@ -28,13 +28,13 @@ export function getPosition(elem: HTMLElement) {
 
 export function getWidth(elem: HTMLElement) {
   let width = null;
-  let widthValue = getStyle(elem, "width");
+  const widthValue = getStyle(elem, "width");
   width = widthValue.match(/-?\d+/g);
   return parseInt(width[0]);
 }
 export function getHeight(elem: HTMLElement) {
   let height = null;
-  let heightValue = getStyle(elem, "height");
+  const heightValue = getStyle(elem, "height");
   height = heightValue.match(/-?\d+/g);
   return parseInt(height[0]);
 }
@@ -47,13 +47,15 @@ export function setWidth(elem: HTMLElement, width: any) {
 }
 
 export function setPosition(elem: HTMLElement, pos: any) {
-  elem.style["transform"] = "translate(" + pos.x + "px, " + pos.y + "px)";
+  elem.style["transform"] = `translate(${pos.x}px, ${pos.y}px)`;
+
+  (elem as any).layout = pos;
 }
 
 export function throttle(func: any, delay: number): any {
   let last = 0;
   return (...ctx: any) => {
-    var now = Date.now();
+    const now = Date.now();
     if (now >= delay + last) {
       last = now;
       return func.call(...ctx);
@@ -141,8 +143,8 @@ export function resolveCollision(
 ) {
   let hasD = false,
     hasU = false,
-    lowestPoint = Number.MIN_SAFE_INTEGER,
-    lowerRnds: Rnd[] = [];
+    lowestPoint = Number.MIN_SAFE_INTEGER;
+  const lowerRnds: Rnd[] = [];
   containRnds.forEach((containRnd) => {
     if (containRnd === draggingRnd) return;
     const collided = collides(item, containRnd.elem);
@@ -153,20 +155,20 @@ export function resolveCollision(
     } else return;
     lowestPoint = Math.max(
       lowestPoint,
-      getPosition(containRnd.elem).y + getHeight(containRnd.elem)
+      (containRnd.elem as any).layout.y + getHeight(containRnd.elem) + 1
     );
   });
   // 只要有更高的元素，item就必须被撞下去
   if (hasD) {
-    setPosition(item, { x: getPosition(item).x, y: lowestPoint });
+    setPosition(item, { x: (item as any).layout.x, y: lowestPoint });
     resolveCollision(containRnds, item, draggingRnd);
   }
   // 只有当没有比当前item更高的元素的时候，低位元素才会被撞下去下降
   else if (hasU) {
     lowerRnds.forEach((rnd) => {
       const toBeChangePosition = {
-        x: getPosition(rnd.elem).x,
-        y: getPosition(item).y + getHeight(item),
+        x: (rnd.elem as any).layout.x,
+        y: (item as any).layout.y + getHeight(item),
       };
       setPosition(rnd.elem, toBeChangePosition);
       rnd.handleMoveLine();
@@ -180,11 +182,14 @@ export function collides(item1: HTMLElement, item2: HTMLElement) {
   if (item1 === item2) return "N"; // same element
   const l1 = item1.getBoundingClientRect(),
     l2 = item2.getBoundingClientRect();
-  if (l1.x + l1.width <= l2.x) return "N"; // l1 is left of l2
-  if (l1.x >= l2.x + l2.width) return "N"; // l1 is right of l2
-  if (l1.y + l1.height <= l2.y) return "N"; // l1 is above l2
-  if (l1.y >= l2.y + l2.height) return "N"; // l1 is below l2
-  if (l1.y >= l2.y) return "D";
+
+  if ((item1 as any).layout.x + l1.width <= l2.x) return "N"; // l1 is left of l2
+  if ((item1 as any).layout.x >= (item2 as any).layout.x + l2.width) return "N"; // l1 is right of l2
+  if ((item1 as any).layout.y + l1.height <= (item2 as any).layout.y)
+    return "N"; // l1 is above l2
+  if ((item1 as any).layout.y >= (item2 as any).layout.y + l2.height)
+    return "N"; // l1 is below l2
+  if ((item1 as any).layout.y >= (item2 as any).layout.y) return "D";
   return "U"; // boxes overlap
 }
 

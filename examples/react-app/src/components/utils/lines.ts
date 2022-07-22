@@ -1,4 +1,4 @@
-import { Line, Box, LineType } from "./index.d";
+import { Line, Box, LineType } from './index.d';
 
 export default class Lines {
   vLines: number[];
@@ -6,15 +6,15 @@ export default class Lines {
   hLines: number[];
   hMap: Map<number, Line[]>;
   constructor() {
-    this.vLines = new Array();
+    this.vLines = [];
     this.vMap = new Map();
-    this.hLines = new Array();
+    this.hLines = [];
     this.hMap = new Map();
   }
 
   insert(line: Line) {
     switch (line.type) {
-      case "V":
+      case 'V':
         if (this.vMap.has(line.pos)) {
           (this.vMap.get(line.pos) as Line[]).push(line);
         } else {
@@ -22,7 +22,7 @@ export default class Lines {
           this.vLines.push(line.pos);
         }
         break;
-      case "H":
+      case 'H':
         if (this.hMap.has(line.pos)) {
           (this.hMap.get(line.pos) as Line[]).push(line);
         } else {
@@ -34,29 +34,29 @@ export default class Lines {
   }
 
   remove(line: Line) {
+    const vt: any = this.vMap.get(line.pos);
+    const idxV = this.vLines.findIndex((i) => i === line.pos);
+    const ht: any = this.hMap.get(line.pos);
+    const idxH = this.hLines.findIndex((i) => i === line.pos);
     switch (line.type) {
-      case "V":
-        const vt: any = this.vMap.get(line.pos);
+      case 'V':
         vt.splice(
           vt.findIndex((i: any) => i.box === line.box),
-          1
+          1,
         );
         if (vt.length <= 0) {
-          const idxV = this.vLines.findIndex((i) => i === line.pos);
           if (idxV !== -1) {
             this.vLines.splice(idxV, 1);
           }
           this.vMap.delete(line.pos);
         }
         break;
-      case "H":
-        const ht: any = this.hMap.get(line.pos);
+      case 'H':
         ht.splice(
           ht.findIndex((i: any) => i.box === line.box),
-          1
+          1,
         );
         if (ht.length <= 0) {
-          const idxH = this.hLines.findIndex((i) => i === line.pos);
           if (idxH !== -1) {
             this.hLines.splice(idxH, 1);
           }
@@ -68,16 +68,22 @@ export default class Lines {
   }
 
   search(line: Line, dis: number) {
+    const vt: any = this.vMap.has(line.pos) ? this.vMap.get(line.pos) : [];
+    let vtl: any = [];
+    let vtr: any = [];
+    const nodeV: any = {
+      left: null,
+      right: null,
+    };
+    let htl: any = [];
+    let htr: any = [];
+    const nodeH: any = {
+      left: null,
+      right: null,
+    };
+    const ht: any = this.hMap.has(line.pos) ? this.hMap.get(line.pos) : [];
     switch (line.type) {
-      case "V":
-        const vt: any = this.vMap.has(line.pos) ? this.vMap.get(line.pos) : [];
-        let vtl: any = [];
-        let vtr: any = [];
-        const nodeV: any = {
-          left: null,
-          right: null,
-        };
-
+      case 'V':
         // !这里遍历需要处理
         this.vLines.forEach((v) => {
           if (v < line.pos) {
@@ -101,14 +107,7 @@ export default class Lines {
         }
 
         return Array.from(new Set(vt.concat(vtl, vtr))) as any;
-      case "H":
-        const ht: any = this.hMap.has(line.pos) ? this.hMap.get(line.pos) : [];
-        let htl: any = [];
-        let htr: any = [];
-        const nodeH: any = {
-          left: null,
-          right: null,
-        };
+      case 'H':
         this.hLines.forEach((v) => {
           if (v < line.pos) {
             if (nodeH.left === null) nodeH.left = v;
@@ -137,14 +136,14 @@ export default class Lines {
     let t = 0;
     Array.from(this.vMap.keys()).forEach((k) => {
       this.vMap.get(k)?.forEach((line) => {
-        line.instance.style.display = "none";
-        t++;
+        line.instance.style.display = 'none';
+        t += 1;
       });
     });
     Array.from(this.hMap.keys()).forEach((k) => {
       this.hMap.get(k)?.forEach((line) => {
-        line.instance.style.display = "none";
-        t++;
+        line.instance.style.display = 'none';
+        t += 1;
       });
     });
   }

@@ -1,3 +1,5 @@
+import { Rnd } from ".";
+
 export type LineType = "H" | "V";
 
 export type Box = {
@@ -15,4 +17,11 @@ export type Line = {
   type: LineType;
   box: Box | null;
   instance: HTMLElement;
+};
+
+export type Layout = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
 };

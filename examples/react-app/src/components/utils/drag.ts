@@ -1,4 +1,3 @@
-import { thisTypeAnnotation } from "@babel/types";
 import {
   getWidth,
   getHeight,
@@ -9,7 +8,7 @@ import {
   setWidth,
   EventBus,
   throttle,
-} from "./utils";
+} from './utils';
 
 export default class Drag {
   // 放在构造函数中的属性，都是属于每一个实例单独拥有
@@ -34,7 +33,7 @@ export default class Drag {
     selector: any,
     public eventBus: EventBus,
     resizeable: boolean,
-    public attach: any
+    public attach: any,
   ) {
     // 放在构造函数中的属性，都是属于每一个实例单独拥有
     this.elem = selector;
@@ -47,37 +46,34 @@ export default class Drag {
     this.addCursor();
 
     this.eventBus.on(
-      "attach",
+      'attach',
       (type: any, pos: any, sensitive: any, cb: any) => {
         this.type = type;
         this.attachPos = pos;
         this.sensitive = sensitive;
         this.attachCallback = cb;
-      }
+      },
     );
   }
 
   setDrag() {
-    const that = this;
-    this.elem.addEventListener("mousedown", start);
-
     let throttleCalculateSpeed: (
-      that: this,
+      this: this,
       distanceX: number,
-      distanceY: number
+      distanceY: number,
     ) => number;
 
     // 拖动速度的计算值
     let speed: number = 20;
 
-    function start(e: MouseEvent) {
-      that.startX = e.pageX;
-      that.startY = e.pageY;
-      that.sourceWidth = getWidth(that.elem);
-      that.sourceHeight = getHeight(that.elem);
-      let pos = getPosition(that.elem);
-      that.sourceX = pos.x;
-      that.sourceY = pos.y;
+    const start = (e: MouseEvent) => {
+      this.startX = e.pageX;
+      this.startY = e.pageY;
+      this.sourceWidth = getWidth(this.elem);
+      this.sourceHeight = getHeight(this.elem);
+      const pos = getPosition(this.elem);
+      this.sourceX = pos.x;
+      this.sourceY = pos.y;
 
       let preX = 0,
         preY = 0;
@@ -87,84 +83,86 @@ export default class Drag {
         (distanceX: number, distanceY: number) => {
           const speed: number = Math.max(
             Math.abs(distanceX - preX),
-            Math.abs(distanceY - preY)
+            Math.abs(distanceY - preY),
           );
           preX = distanceX;
           preY = distanceY;
           return speed;
         },
-        200
+        200,
       );
 
-      that.eventBus.dispatch("dragStart", []);
+      this.eventBus.dispatch('dragStart', []);
 
-      console.log("drag");
-      document.addEventListener("contextmenu", end);
-      document.addEventListener("mousemove", move);
-      document.addEventListener("mouseup", end);
+      document.addEventListener('contextmenu', end);
+      document.addEventListener('mousemove', move);
+      document.addEventListener('mouseup', end);
 
       e.stopPropagation();
-    }
+    };
 
-    function move(e: MouseEvent) {
-      let currentX = e.pageX,
+    this.elem.addEventListener('mousedown', start);
+
+    const move = (e: MouseEvent) => {
+      const currentX = e.pageX,
         currentY = e.pageY;
 
-      let distanceX = currentX - that.startX,
-        distanceY = currentY - that.startY;
+      const distanceX = currentX - this.startX,
+        distanceY = currentY - this.startY;
 
-      speed = throttleCalculateSpeed(that, distanceX, distanceY) ?? speed;
+      speed =
+        (throttleCalculateSpeed as any)(this, distanceX, distanceY) ?? speed;
 
       // 判断是否有需要进行吸附的水平线或垂直线
       if (
         speed >= 20 ||
-        !that.type ||
-        (that.attachPos.diffH !== null &&
+        !this.type ||
+        (this.attachPos.diffH !== null &&
           Math.abs(
-            that.sourceX +
-              that.attachPos.diffH +
+            this.sourceX +
+              this.attachPos.diffH +
               distanceX -
-              that.attachPos.nearLineH
-          ) > that.sensitive) ||
-        (that.attachPos.diffV !== null &&
+              this.attachPos.nearLineH,
+          ) > this.sensitive) ||
+        (this.attachPos.diffV !== null &&
           Math.abs(
-            that.sourceY +
-              that.attachPos.diffV +
+            this.sourceY +
+              this.attachPos.diffV +
               distanceY -
-              that.attachPos.nearLineV
-          ) > that.sensitive)
+              this.attachPos.nearLineV,
+          ) > this.sensitive)
       ) {
-        setPosition(that.elem, {
-          x: (that.sourceX + distanceX).toFixed(),
-          y: (that.sourceY + distanceY).toFixed(),
+        setPosition(this.elem, {
+          x: (this.sourceX + distanceX).toFixed(),
+          y: (this.sourceY + distanceY).toFixed(),
         });
-        that.eventBus.dispatch("drag", [e]);
+        this.eventBus.dispatch('drag', [e]);
       } else {
-        setPosition(that.elem, {
-          x: that.attachPos.nearLineH
-            ? that.attachPos.nearLineH - that.attachPos.diffH
-            : (that.sourceX + distanceX).toFixed(),
-          y: that.attachPos.nearLineV
-            ? that.attachPos.nearLineV - that.attachPos.diffV
-            : (that.sourceY + distanceY).toFixed(),
+        setPosition(this.elem, {
+          x: this.attachPos.nearLineH
+            ? this.attachPos.nearLineH - this.attachPos.diffH
+            : (this.sourceX + distanceX).toFixed(),
+          y: this.attachPos.nearLineV
+            ? this.attachPos.nearLineV - this.attachPos.diffV
+            : (this.sourceY + distanceY).toFixed(),
         });
-        that.attachCallback();
-        that.type = null;
-        that.eventBus.dispatch("drag", [e]);
+        this.attachCallback();
+        this.type = null;
+        this.eventBus.dispatch('drag', [e]);
       }
 
-      //通知 Rnd 拖拽
-    }
+      // 通知 Rnd 拖拽
+    };
 
-    function end() {
-      that.eventBus.dispatch("dragEnd", []);
-      document.removeEventListener("contextmenu", end);
-      document.removeEventListener("mousemove", move);
-      document.removeEventListener("mouseup", end);
-    }
+    const end = () => {
+      this.eventBus.dispatch('dragEnd', []);
+      document.removeEventListener('contextmenu', end);
+      document.removeEventListener('mousemove', move);
+      document.removeEventListener('mouseup', end);
+    };
   }
 
   addCursor() {
-    this.elem.style.cursor = "move";
+    this.elem.style.cursor = 'move';
   }
 }
