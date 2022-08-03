@@ -1,0 +1,1 @@
+export { renderPreview } from './getScreenShotInRame';

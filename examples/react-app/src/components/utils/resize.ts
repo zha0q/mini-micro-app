@@ -1,3 +1,4 @@
+import { Rnd } from './index';
 import {
   getWidth,
   getHeight,
@@ -42,11 +43,13 @@ export default class Resize {
   minWidth = 10;
   minHeight = 10;
 
-  constructor(
-    selector: any,
-    public eventBus: EventBus,
-    public shapeColor: any,
-  ) {
+  remove = () => {
+    this.shapes.forEach((shape: HTMLElement) => {
+      this.rnd.bak.elem.removeChild(shape);
+    });
+  };
+
+  constructor(selector: any, public eventBus: EventBus, public rnd: Rnd) {
     this.elem = selector;
 
     this.init();
@@ -54,7 +57,6 @@ export default class Resize {
 
   init() {
     this.initResize();
-    // this.addCursor();
   }
 
   resize(e: MouseEvent, pos: any, width: number, height: number) {
@@ -94,7 +96,8 @@ export default class Resize {
 
   resizeT = (e: MouseEvent) => {
     const move = (e: any) => {
-      const distanceY = e.pageY - this.startY;
+      const distanceY =
+        (e.pageY - this.startY) / (this.rnd.options.transformScale as number);
       const currentY = this.sourceY + distanceY;
       if (this.sourceHeight - distanceY >= this.minWidth) {
         this.resize(
@@ -119,7 +122,8 @@ export default class Resize {
 
   resizeR = (e: MouseEvent) => {
     const move = (e: MouseEvent) => {
-      const distanceX = e.pageX - this.startX;
+      const distanceX =
+        (e.pageX - this.startX) / (this.rnd.options.transformScale as number);
       if (this.sourceWidth + distanceX >= this.minHeight) {
         this.resize(
           e,
@@ -143,7 +147,8 @@ export default class Resize {
 
   resizeB = (e: MouseEvent) => {
     const move = (e: MouseEvent) => {
-      const distanceY = e.pageY - this.startY;
+      const distanceY =
+        (e.pageY - this.startY) / (this.rnd.options.transformScale as number);
       if (this.sourceHeight + distanceY >= this.minWidth) {
         this.resize(
           e,
@@ -169,7 +174,8 @@ export default class Resize {
     const move = (e: MouseEvent) => {
       const distanceX = e.pageX - this.startX;
       const currentX = this.sourceX + distanceX;
-      const distanceY = e.pageY - this.startY;
+      const distanceY =
+        (e.pageY - this.startY) / (this.rnd.options.transformScale as number);
       const currentY = this.sourceY + distanceY;
       if (
         this.sourceWidth - distanceX >= this.minHeight &&
@@ -198,7 +204,8 @@ export default class Resize {
   resizeTR = (e: MouseEvent) => {
     const move = (e: MouseEvent) => {
       const distanceX = e.pageX - this.startX;
-      const distanceY = e.pageY - this.startY;
+      const distanceY =
+        (e.pageY - this.startY) / (this.rnd.options.transformScale as number);
       const currentY = this.sourceY + distanceY;
       if (
         this.sourceWidth + distanceX >= this.minHeight &&
@@ -226,8 +233,10 @@ export default class Resize {
 
   resizeBR = (e: MouseEvent) => {
     const move = (e: MouseEvent) => {
-      const distanceX = e.pageX - this.startX;
-      const distanceY = e.pageY - this.startY;
+      const distanceX =
+        (e.pageX - this.startX) / (this.rnd.options.transformScale as number);
+      const distanceY =
+        (e.pageY - this.startY) / (this.rnd.options.transformScale as number);
       if (
         this.sourceWidth + distanceX >= this.minHeight &&
         this.sourceHeight + distanceY >= this.minWidth
@@ -293,10 +302,10 @@ export default class Resize {
         position: 'absolute',
         left: '0',
         top: '0',
-        zIndex: '10000',
+        zIndex: '100',
         height: '4px',
         width: '4px',
-        border: `1px ${this.shapeColor} solid`,
+        border: `1px ${this.rnd.options.color} solid`,
         borderRadius: '4px',
       });
 

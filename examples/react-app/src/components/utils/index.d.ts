@@ -1,6 +1,6 @@
-import { Rnd } from ".";
+import { Rnd } from '.';
 
-export type LineType = "H" | "V";
+export type LineType = 'H' | 'V';
 
 export type Box = {
   vt: Line;
@@ -22,6 +22,19 @@ export type Line = {
 export type Layout = {
   x: number;
   y: number;
-  width: number;
-  height: number;
+  w: number;
+  h: number;
+};
+
+export type RndOptions = {
+  default: {
+    x: number;
+    y: number;
+    height: number;
+    width: number;
+  };
+  draggable: boolean;
+  resizable: boolean;
+  sensitive: number;
+  nearLineDistance: number;
 };

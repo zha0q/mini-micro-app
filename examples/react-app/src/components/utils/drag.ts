@@ -1,3 +1,4 @@
+import { Rnd } from './index';
 import {
   getWidth,
   getHeight,
@@ -27,13 +28,15 @@ export default class Drag {
   type: any = null;
   attachCallback: any;
 
+  remove: any;
+
   // throttleSetPosition = throttle(setPosition, 1000);
 
   constructor(
     selector: any,
     public eventBus: EventBus,
-    resizeable: boolean,
     public attach: any,
+    public rnd: Rnd,
   ) {
     // 放在构造函数中的属性，都是属于每一个实例单独拥有
     this.elem = selector;
@@ -64,7 +67,7 @@ export default class Drag {
     ) => number;
 
     // 拖动速度的计算值
-    let speed: number = 20;
+    let speed = 20;
 
     const start = (e: MouseEvent) => {
       this.startX = e.pageX;
@@ -75,8 +78,8 @@ export default class Drag {
       this.sourceX = pos.x;
       this.sourceY = pos.y;
 
-      let preX = 0,
-        preY = 0;
+      let preX = 0;
+      let preY = 0;
 
       // 根据单位时间（200ms）内的移动距离来计算光标移动速度，以此作为用户是否想要进行吸附的判断
       throttleCalculateSpeed = throttle(
@@ -103,12 +106,18 @@ export default class Drag {
 
     this.elem.addEventListener('mousedown', start);
 
-    const move = (e: MouseEvent) => {
-      const currentX = e.pageX,
-        currentY = e.pageY;
+    this.remove = () => {
+      document.removeEventListener('mousedown', start);
+    };
 
-      const distanceX = currentX - this.startX,
-        distanceY = currentY - this.startY;
+    const move = (e: MouseEvent) => {
+      const currentX = e.pageX;
+      const currentY = e.pageY;
+
+      const distanceX =
+        (currentX - this.startX) / (this.rnd.options.transformScale as number);
+      const distanceY =
+        (currentY - this.startY) / (this.rnd.options.transformScale as number);
 
       speed =
         (throttleCalculateSpeed as any)(this, distanceX, distanceY) ?? speed;

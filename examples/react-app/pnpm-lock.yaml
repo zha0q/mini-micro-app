@@ -12,6 +12,7 @@ specifiers:
   '@types/react': ^18.0.14
   '@types/react-dom': ^18.0.5
   '@types/react-router-dom': '5'
+  axios: ^0.27.2
   babel-jest: ^27.4.2
   babel-loader: ^8.2.3
   babel-plugin-named-asset-import: ^0.3.8
@@ -30,6 +31,7 @@ specifiers:
   file-loader: ^6.2.0
   fs-extra: ^10.0.0
   html-webpack-plugin: ^5.5.0
+  html2canvas: ^1.4.1
   identity-obj-proxy: ^3.0.0
   jest: ^27.4.3
   jest-resolve: ^27.4.2
@@ -78,6 +80,7 @@ dependencies:
   '@types/react': 18.0.14
   '@types/react-dom': 18.0.5
   '@types/react-router-dom': 5.3.3
+  axios: 0.27.2
   babel-jest: 27.5.1_@babel+core@7.18.6
   babel-loader: 8.2.5_fswvdo7jykdwhfxrdcvghfn6pa
   babel-plugin-named-asset-import: 0.3.8_@babel+core@7.18.6
@@ -96,6 +99,7 @@ dependencies:
   file-loader: 6.2.0_webpack@5.73.0
   fs-extra: 10.1.0
   html-webpack-plugin: 5.5.0_webpack@5.73.0
+  html2canvas: 1.4.1
   identity-obj-proxy: 3.0.0
   jest: 27.5.1
   jest-resolve: 27.5.1
@@ -3140,6 +3144,15 @@ packages:
     engines: {node: '>=12'}
     dev: false
 
+  /axios/0.27.2:
+    resolution: {integrity: sha512-t+yRIyySRTp/wua5xEr+z1q60QmLq8ABsS5O9Me1AsE5dfKqgnCFzwiCZZ/cGNd1lq4/7akDWMxdhVlucjmnOQ==}
+    dependencies:
+      follow-redirects: 1.15.1
+      form-data: 4.0.0
+    transitivePeerDependencies:
+      - debug
+    dev: false
+
   /axobject-query/2.2.0:
     resolution: {integrity: sha512-Td525n+iPOOyUQIeBfcASuG6uJsDOITl7Mds5gFyerkWiX7qhUTdYUBlSgNMyVqtSJqwpt1kXGLdUt6SykLMRA==}
     dev: false
@@ -3321,6 +3334,11 @@ packages:
 
   /balanced-match/1.0.2:
     resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
+    dev: false
+
+  /base64-arraybuffer/1.0.2:
+    resolution: {integrity: sha512-I3yl4r9QB5ZRY3XuJVEPfc2XhZO6YweFPI+UovAzn+8/hb3oJ6lnysaFcjVpkCPfVWFUDvoZ8kmVDP7WyRtYtQ==}
+    engines: {node: '>= 0.6.0'}
     dev: false
 
   /batch/0.6.1:
@@ -3811,6 +3829,12 @@ packages:
     dependencies:
       postcss: 8.4.14
       postcss-selector-parser: 6.0.10
+    dev: false
+
+  /css-line-break/2.1.0:
+    resolution: {integrity: sha512-FHcKFCZcAha3LwfVBhCQbW2nCNbkZXn7KVUJcsT5/P8YmfsVja0FMPJr0B903j/E69HUphKiV9iQArX8SDYA4w==}
+    dependencies:
+      utrie: 1.0.2
     dev: false
 
   /css-loader/6.7.1_webpack@5.73.0:
@@ -5080,6 +5104,15 @@ packages:
       mime-types: 2.1.35
     dev: false
 
+  /form-data/4.0.0:
+    resolution: {integrity: sha512-ETEklSGi5t0QMZuiXoA/Q6vcnxcLQP5vdugSpuAyi6SVGi2clPPp+xgEhuMaHC+zGgn31Kd235W35f7Hykkaww==}
+    engines: {node: '>= 6'}
+    dependencies:
+      asynckit: 0.4.0
+      combined-stream: 1.0.8
+      mime-types: 2.1.35
+    dev: false
+
   /forwarded/0.2.0:
     resolution: {integrity: sha512-buRG0fpBtRHSTCOASe6hD258tEubFoRLb4ZNA6NxMVHNw2gOcwHo9wyablzMzOA5z9xA9L1KNjk/Nt6MT9aYow==}
     engines: {node: '>= 0.6'}
@@ -5395,6 +5428,14 @@ packages:
       pretty-error: 4.0.0
       tapable: 2.2.1
       webpack: 5.73.0
+    dev: false
+
+  /html2canvas/1.4.1:
+    resolution: {integrity: sha512-fPU6BHNpsyIhr8yyMpTLLxAbkaK8ArIBcmZIRiBLiDhjeqvXolaEmDGmELFuX9I4xDcaKKcJl+TKZLqruBbmWA==}
+    engines: {node: '>=8.0.0'}
+    dependencies:
+      css-line-break: 2.1.0
+      text-segmentation: 1.0.3
     dev: false
 
   /htmlparser2/6.1.0:
@@ -9218,6 +9259,12 @@ packages:
       minimatch: 3.1.2
     dev: false
 
+  /text-segmentation/1.0.3:
+    resolution: {integrity: sha512-iOiPUo/BGnZ6+54OsWxZidGCsdU8YbE4PSpdPinp7DeMtUJNJBoJ/ouUSTJjHkh1KntHaltHl/gDs2FC4i5+Nw==}
+    dependencies:
+      utrie: 1.0.2
+    dev: false
+
   /text-table/0.2.0:
     resolution: {integrity: sha512-N+8UisAXDGk8PFXP4HAzVR9nbfmVJ3zYLAWiTIoqC5v5isinhr+r5uaO8+7r3BMfuNIufIsA7RdpVgacC2cSpw==}
     dev: false
@@ -9491,6 +9538,12 @@ packages:
   /utils-merge/1.0.1:
     resolution: {integrity: sha1-n5VxD1CiZ5R7LMwSR0HBAoQn5xM=}
     engines: {node: '>= 0.4.0'}
+    dev: false
+
+  /utrie/1.0.2:
+    resolution: {integrity: sha512-1MLa5ouZiOmQzUbjbu9VmjLzn1QLXBhwpUa7kdLUQK+KQ5KA9I1vk5U4YHe/X2Ch7PYnJfWuWT+VbuxbGwljhw==}
+    dependencies:
+      base64-arraybuffer: 1.0.2
     dev: false
 
   /uuid/8.3.2:

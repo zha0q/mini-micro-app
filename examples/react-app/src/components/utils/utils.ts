@@ -14,13 +14,13 @@ export function setStyle(elem: HTMLElement, config: any) {
 export function getPosition(elem: HTMLElement) {
   let pos = { x: 0, y: 0 };
   const transformValue = getStyle(elem, "transform");
-  if (transformValue == "none") {
-    elem.style["transform"] = "translate(0, 0)";
+  if (transformValue === "none") {
+    elem.style.transform = "translate(0, 0)";
   } else {
     const temp: any = transformValue.match(/-?\d+/g);
     pos = {
-      x: parseInt(temp[4].trim()),
-      y: parseInt(temp[5].trim()),
+      x: parseInt(temp[4].trim(), 10),
+      y: parseInt(temp[5].trim(), 10),
     };
   }
   return pos;
@@ -30,26 +30,29 @@ export function getWidth(elem: HTMLElement) {
   let width = null;
   const widthValue = getStyle(elem, "width");
   width = widthValue.match(/-?\d+/g);
-  return parseInt(width[0]);
+  return parseInt(width[0], 10);
 }
 export function getHeight(elem: HTMLElement) {
   let height = null;
   const heightValue = getStyle(elem, "height");
   height = heightValue.match(/-?\d+/g);
-  return parseInt(height[0]);
+  return parseInt(height[0], 10);
 }
 
 export function setHeight(elem: HTMLElement, height: any) {
-  elem.style["height"] = `${height}px`;
+  elem.style.height = `${height}px`;
 }
 export function setWidth(elem: HTMLElement, width: any) {
-  elem.style["width"] = `${width}px`;
+  elem.style.width = `${width}px`;
 }
 
 export function setPosition(elem: HTMLElement, pos: any) {
-  elem.style["transform"] = `translate(${pos.x}px, ${pos.y}px)`;
+  elem.style.transform = `translate(${pos.x}px, ${pos.y}px)`;
 
-  (elem as any).layout = pos;
+  (elem as any).layout = {
+    x: parseInt(pos.x, 10),
+    y: parseInt(pos.y, 10),
+  };
 }
 
 export function throttle(func: any, delay: number): any {
@@ -97,40 +100,50 @@ export function observeContainWindow(cb1: any, cb2: any): IntersectionObserver {
 
 export function buildFakeItem(rnd: Rnd) {
   const fakeItem = document.createElement("div");
-  const pos = getPosition(rnd.elem);
+  const layout = correctBounds(
+    {
+      ...getPosition(rnd.elem),
+      w: getWidth(rnd.elem),
+      h: getHeight(rnd.elem),
+    },
+    rnd
+  );
   setStyle(fakeItem, {
-    width: `${getWidth(rnd.elem)}px`,
-    height: `${getHeight(rnd.elem)}px`,
+    width: `${layout.w}px`,
+    height: `${layout.h}px`,
     position: "absolute",
     left: rnd.elem.style.left,
     top: rnd.elem.style.top,
     backgroundColor: rnd.options.color as string,
     opacity: "30%",
   });
-
-  setPosition(fakeItem, { x: pos.x, y: pos.y });
+  setPosition(fakeItem, layout);
   rnd.bak.elem.appendChild(fakeItem);
   return fakeItem;
 }
 
 // 用来调整fakeItem位置和尺寸，如果普通item直接setPosition就可以，因为不会涉及到尺寸更改
-export function adjustFakeItem(
-  fakeItem: HTMLElement,
-  item: HTMLElement,
-  y?: number
-) {
-  const pos = getPosition(item);
-  const rect = item.getBoundingClientRect();
-  fakeItem.style.width = `${rect.width}px`;
-  fakeItem.style.height = `${rect.height}px`;
-  setPosition(fakeItem, { x: pos.x, y: pos.y });
+export function adjustFakeItem(fakeItem: HTMLElement, rnd: Rnd) {
+  const pos = getPosition(rnd.elem);
+  const rect = rnd.elem.getBoundingClientRect();
+  const layout = correctBounds(
+    {
+      ...pos,
+      w: rect.width,
+      h: rect.height,
+    },
+    rnd
+  );
+  fakeItem.style.width = `${layout.w}px`;
+  fakeItem.style.height = `${layout.h}px`;
+  setPosition(fakeItem, layout);
 }
 
 export function resolveCompactionCollision(containRnds: Rnd[], rnd: Rnd) {
+  adjustFakeItem(rnd.fakeItem, rnd);
   const collided = containRnds
-    .map((containRnd) => collides(rnd.elem, containRnd.elem) === "N")
+    .map((containRnd) => collides(rnd.fakeItem, containRnd.elem) === "N")
     .includes(false);
-  adjustFakeItem(rnd.fakeItem, rnd.elem);
   if (collided) {
     resolveCollision(containRnds, rnd.fakeItem, rnd);
   }
@@ -141,9 +154,9 @@ export function resolveCollision(
   item: HTMLElement,
   draggingRnd: Rnd
 ) {
-  let hasD = false,
-    hasU = false,
-    lowestPoint = Number.MIN_SAFE_INTEGER;
+  let hasD = false;
+  let hasU = false;
+  let lowestPoint = Number.MIN_SAFE_INTEGER;
   const lowerRnds: Rnd[] = [];
   containRnds.forEach((containRnd) => {
     if (containRnd === draggingRnd) return;
@@ -174,16 +187,27 @@ export function resolveCollision(
       rnd.handleMoveLine();
       rnd.resize?.setResize(toBeChangePosition);
       resolveCollision(containRnds, rnd.elem, draggingRnd);
+
+      rnd.elem.dispatchEvent(
+        new CustomEvent("onLayoutChange", {
+          detail: {
+            e: null,
+            ...toBeChangePosition,
+            w: getWidth(rnd.elem),
+            h: getHeight(rnd.elem),
+          },
+        })
+      );
     });
   }
 }
 
 export function collides(item1: HTMLElement, item2: HTMLElement) {
   if (item1 === item2) return "N"; // same element
-  const l1 = item1.getBoundingClientRect(),
-    l2 = item2.getBoundingClientRect();
+  const l1 = item1.getBoundingClientRect();
+  const l2 = item2.getBoundingClientRect();
 
-  if ((item1 as any).layout.x + l1.width <= l2.x) return "N"; // l1 is left of l2
+  if ((item1 as any).layout.x + l1.width <= (item2 as any).layout.x) return "N"; // l1 is left of l2
   if ((item1 as any).layout.x >= (item2 as any).layout.x + l2.width) return "N"; // l1 is right of l2
   if ((item1 as any).layout.y + l1.height <= (item2 as any).layout.y)
     return "N"; // l1 is above l2
@@ -191,6 +215,22 @@ export function collides(item1: HTMLElement, item2: HTMLElement) {
     return "N"; // l1 is below l2
   if ((item1 as any).layout.y >= (item2 as any).layout.y) return "D";
   return "U"; // boxes overlap
+}
+
+function correctBounds(layout: any, rnd: Rnd): any {
+  const l = layout;
+  const bounds = rnd.bak.elem.getBoundingClientRect();
+  // 右侧溢出处理
+  if (l.x + l.w > bounds.width) {
+    l.x = bounds.width - l.w;
+  }
+  // 左侧溢出处理
+  if (l.x < 0) {
+    l.x = 0;
+    // l.w = bounds.width;
+  }
+  l.y = Math.max(l.y, 0);
+  return l;
 }
 
 export function addTransition(rnd: Rnd) {
