@@ -1,41 +1,39 @@
-import { Bak, Rnd } from './index';
-import { Layout, RndOptions, Box } from './index.d';
+import { Bak, Rnd } from "./index";
+import { Layout, RndOptions, Box } from "./index.d";
 
 // 自定义元素
 class MyRndElement extends HTMLElement {
   // 声明需要监听的属性名，只有这些属性变化时才会触发attributeChangedCallback
   static get observedAttributes() {
-    return ['transformscale'];
+    return ["transformscale", "targetwidth"];
   }
   private rnd: any;
-  constructor() {
-    super();
-  }
 
   connectedCallback() {
     // 元素首次被插入到DOM时执行，此时去加载子应用的静态资源并渲染
     (this.parentElement as HTMLElement).dispatchEvent(
-      new CustomEvent('init', {
+      new CustomEvent("init", {
         detail: {
           cb: (bak: Bak) => {
-            console.log('init', this);
+            console.log("init", this);
             this.rnd = new Rnd(this, bak, {
               default: {
-                x: this.getAttribute('x'),
-                y: this.getAttribute('y'),
-                width: this.getAttribute('w'),
-                height: this.getAttribute('h'),
+                x: this.getAttribute("x"),
+                y: this.getAttribute("y"),
+                width: this.getAttribute("w"),
+                height: this.getAttribute("h"),
               },
-              draggable: this.getAttribute('dragable') === 'true',
-              resizable: this.getAttribute('resizable') === 'true',
-              color: this.getAttribute('color'),
-              sensitive: this.getAttribute('sensitive'),
-              nearLineDistance: this.getAttribute('nearLineDistance'),
-              transformScale: this.getAttribute('transformScale'),
+              draggable: this.getAttribute("dragable") === "true",
+              resizable: this.getAttribute("resizable") === "true",
+              color: this.getAttribute("color"),
+              sensitive: this.getAttribute("sensitive"),
+              nearLineDistance: this.getAttribute("nearLineDistance"),
+              transformScale: this.getAttribute("transformScale"),
+              targetWidth: this.getAttribute("targetWidth"),
             } as any);
           },
         },
-      }),
+      })
     );
   }
 
@@ -47,11 +45,11 @@ class MyRndElement extends HTMLElement {
     this.rnd.resize.remove();
     // 去除line
     Object.keys(this.rnd.box as Box).forEach((k) => {
-      if (k === 'instance') return;
+      if (k === "instance") return;
       this.rnd.bak.elem.removeChild((this.rnd.box as any)[k].instance);
     });
     this.rnd.bak.containRnd = this.rnd.bak.containRnd.filter(
-      (rnd: Rnd) => rnd.elem !== this.rnd.elem,
+      (rnd: Rnd) => rnd.elem !== this.rnd.elem
     );
   }
 
@@ -59,31 +57,31 @@ class MyRndElement extends HTMLElement {
     // 元素属性发生变化时执行，可以获取属性的值
     if (!this.rnd) return;
     switch (attr) {
-      case 'transformscale':
+      case "transformscale":
         this.rnd && (this.rnd.options.transformScale = newVal);
         break;
-      case 'dragable':
-        this.rnd.options.dragable = newVal === 'true';
-        newVal === 'true' ? this.rnd.dragInit() : this.rnd.drag.remove();
+      case "dragable":
+        this.rnd.options.dragable = newVal === "true";
+        newVal === "true" ? this.rnd.dragInit() : this.rnd.drag.remove();
         break;
-      case 'resizable':
-        this.rnd.options.resizable = newVal === 'true';
-        newVal === 'true' ? this.rnd.resizeInit() : this.rnd.resize.remove();
+      case "resizable":
+        this.rnd.options.resizable = newVal === "true";
+        newVal === "true" ? this.rnd.resizeInit() : this.rnd.resize.remove();
         break;
+      case "targetwidth":
+        this.rnd &&
+          (this.rnd.options.targetWidth = newVal) &&
+          this.rnd.eventBus.dispatch("targetResize", []);
     }
   }
 }
 
 // 自定义元素
 class MyRndBakElement extends HTMLElement {
-  constructor() {
-    super();
-  }
-
   connectedCallback() {
     // 元素首次被插入到DOM时执行
     const bak = new Bak(this);
-    this.addEventListener('init', (e: any) => {
+    this.addEventListener("init", (e: any) => {
       e.detail.cb(bak);
     });
   }
@@ -103,11 +101,11 @@ class MyRndBakElement extends HTMLElement {
  */
 export function defineElement() {
   // 如果已经定义过，则忽略
-  if (!window.customElements.get('rnd-elem')) {
-    window.customElements.define('rnd-elem', MyRndElement);
+  if (!window.customElements.get("rnd-elem")) {
+    window.customElements.define("rnd-elem", MyRndElement);
   }
 
-  if (!window.customElements.get('rnd-bak')) {
-    window.customElements.define('rnd-bak', MyRndBakElement);
+  if (!window.customElements.get("rnd-bak")) {
+    window.customElements.define("rnd-bak", MyRndBakElement);
   }
 }

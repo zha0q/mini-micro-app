@@ -1,8 +1,8 @@
-import { Line, Box } from './index.d';
-import Drag from './drag';
-import Lines from './lines';
-import Resize from './resize';
-import grid from './grid.svg';
+import { Line, Box } from "./index.d";
+import Drag from "./drag";
+import Lines from "./lines";
+import Resize from "./resize";
+import grid from "./grid.svg";
 import {
   getHeight,
   getPosition,
@@ -10,7 +10,6 @@ import {
   setPosition,
   setWidth,
   setHeight,
-  throttle,
   EventBus,
   observeContainWindow,
   resolveCompactionCollision,
@@ -18,8 +17,8 @@ import {
   addTransition,
   removeTransition,
   setStyle,
-} from './utils';
-import { defineElement } from './element';
+} from "./utils";
+import { defineElement } from "./element";
 
 export default {
   start() {
@@ -27,9 +26,9 @@ export default {
   },
 };
 
-type LineT = 'vt' | 'vm' | 'vb' | 'hl' | 'hm' | 'hr';
+type LineT = "vt" | "vm" | "vb" | "hl" | "hm" | "hr";
 
-const lineT = ['vt', 'vm', 'vb', 'hl', 'hm', 'hr'];
+const lineT = ["vt", "vm", "vb", "hl", "hm", "hr"];
 
 export class Bak {
   public lines: Lines;
@@ -40,16 +39,19 @@ export class Bak {
   public containRnd: Rnd[] = [];
   constructor(public elem: HTMLElement) {
     this.lines = new Lines();
-    // const svg = new Image(getWidth(this.elem), getHeight(this.elem));
-    // svg.src = grid;
-    // svg.draggable = false;
-    // svg.style.userSelect = "none";
-    // this.elem.appendChild(svg);
+    const div = document.createElement("div");
+    setStyle(div, {
+      width: "100%",
+      height: "100%",
+      backgroundImage: `url('${grid}')`,
+      userSelect: "none",
+    });
+    this.elem.appendChild(div);
 
-    this.elem.style.position = 'relative';
-    this.elem.style.display = 'block';
+    this.elem.style.position = "relative";
+    this.elem.style.display = "block";
 
-    this.elem.addEventListener('mousedown', () => {
+    this.elem.addEventListener("mousedown", () => {
       this.containRnd.forEach((rnd) => {
         rnd.resize?.disappear();
       });
@@ -82,13 +84,9 @@ export class Rnd {
       nearLineDistance?: number;
       sensitive?: number;
       transformScale?: number;
-    },
+      targetWidth: number;
+    }
   ) {
-    // let flag = false;
-    // this.bak.containRnd.forEach((rnd) => {
-    //   flag = flag || rnd.elem.id === this.elem.id;
-    // });
-    // if (flag) return;
     this.init();
   }
 
@@ -96,7 +94,7 @@ export class Rnd {
     // bak进行收集
     this.bak.containRnd.push(this);
 
-    if (!this.options.color) this.options.color = 'red';
+    if (!this.options.color) this.options.color = "red";
     if (!this.options.nearLineDistance) this.options.nearLineDistance = 0;
     if (!this.options.sensitive) this.options.sensitive = 0;
     if (!this.options.transformScale) this.options.transformScale = 1;
@@ -104,17 +102,17 @@ export class Rnd {
     // 监视元素是否在视口外并进行相应回调
     const observerContainWindow = observeContainWindow(
       () => this.bak.excludeWindowSet.add(this.elem),
-      () => this.bak.excludeWindowSet.delete(this.elem),
+      () => this.bak.excludeWindowSet.delete(this.elem)
     );
     observerContainWindow.observe(this.elem);
 
     //
     // 元素样式初始化
     setStyle(this.elem, {
-      position: 'absolute',
-      left: '0',
-      top: '0',
-      zIndex: '1',
+      position: "absolute",
+      left: "0",
+      top: "0",
+      zIndex: "1",
       transform: `translate(${this.options.default.x}px, ${this.options.default.y}px)`,
       width: `${this.options.default.width}px`,
       height: `${this.options.default.height}px`,
@@ -132,7 +130,7 @@ export class Rnd {
     this.hideUserSelect();
 
     // 元素被focus时 shape显性
-    this.eventBus.on('focus', (rnd: Rnd) => {
+    this.eventBus.on("focus", (rnd: Rnd) => {
       rnd.bak.containRnd.forEach((containedRnd) => {
         if (rnd !== containedRnd) {
           containedRnd.resize?.disappear();
@@ -141,7 +139,7 @@ export class Rnd {
       rnd.resize?.shapesShow();
     });
 
-    document.addEventListener('mouseup', (e) => this.bak.lines.disappear());
+    document.addEventListener("mouseup", (e) => this.bak.lines.disappear());
 
     if (this.options.draggable) {
       this.dragInit();
@@ -169,19 +167,19 @@ export class Rnd {
       this.elem,
       this.eventBus,
       this.attach.bind(this),
-      this,
+      this
     );
 
     // drag 事件
-    this.eventBus.on('dragStart', () => {
+    this.eventBus.on("dragStart", () => {
       removeTransition(this);
       this.fakeItem !== null && this.bak.elem.removeChild(this.fakeItem);
       this.fakeItem = buildFakeItem(this);
 
-      this.eventBus.dispatch('focus', [this, this]);
+      this.eventBus.dispatch("focus", [this, this]);
     });
 
-    this.eventBus.on('drag', (e: MouseEvent) => {
+    this.eventBus.on("drag", (e: MouseEvent) => {
       this.attach(e);
       this.handleMoveLine();
       this.resize?.setResize();
@@ -189,12 +187,12 @@ export class Rnd {
       resolveCompactionCollision(this.bak.containRnd, this);
     });
 
-    this.eventBus.on('dragEnd', (e: MouseEvent) => {
+    this.eventBus.on("dragEnd", (e: MouseEvent) => {
       // 处理左键之外其他鼠标点击事件的边界条件
       if (!this.fakeItem) return;
 
       this.elem.dispatchEvent(
-        new CustomEvent('onLayoutChange', {
+        new CustomEvent("onLayoutChange", {
           detail: {
             e,
             x: getPosition(this.elem).x,
@@ -202,7 +200,7 @@ export class Rnd {
             w: getWidth(this.elem),
             h: getHeight(this.elem),
           },
-        }),
+        })
       );
 
       const fakeItemPosition = getPosition(this.fakeItem);
@@ -216,25 +214,39 @@ export class Rnd {
       // 反馈坐标信息到外界
       this.respondOutside();
     });
+
+    // 监视target视窗变化，变化时修改样式
+    let prevTargetWidth = this.options.targetWidth;
+    this.eventBus.on("targetResize", (e: Event) => {
+      const width = getWidth(this.elem);
+      const pos = getPosition(this.elem);
+      setWidth(this.elem, (width * this.options.targetWidth) / prevTargetWidth);
+      setPosition(this.elem, {
+        x: pos.x * (this.options.targetWidth / prevTargetWidth),
+        y: pos.y,
+      });
+
+      prevTargetWidth = this.options.targetWidth;
+    });
   }
 
   resizeInit() {
     this.resize = new Resize(this.elem, this.eventBus, this);
     // resize事件
-    this.eventBus.on('resizeStart', () => {
+    this.eventBus.on("resizeStart", () => {
       removeTransition(this);
       this.fakeItem = buildFakeItem(this);
 
-      this.eventBus.dispatch('focus', [this, this]);
+      this.eventBus.dispatch("focus", [this, this]);
     });
 
-    this.eventBus.on('resize', (e: MouseEvent) => {
+    this.eventBus.on("resize", (e: MouseEvent) => {
       this.handleMoveLine();
 
       resolveCompactionCollision(this.bak.containRnd, this);
     });
 
-    this.eventBus.on('resizeEnd', (e: MouseEvent) => {
+    this.eventBus.on("resizeEnd", (e: MouseEvent) => {
       const fakeItemPosition = this.fakeItem.layout;
       console.log(fakeItemPosition);
       setPosition(this.elem, fakeItemPosition);
@@ -244,7 +256,7 @@ export class Rnd {
       this.fakeItem = null;
 
       this.elem.dispatchEvent(
-        new CustomEvent('onLayoutChange', {
+        new CustomEvent("onLayoutChange", {
           detail: {
             e,
             x: getPosition(this.elem).x,
@@ -252,7 +264,7 @@ export class Rnd {
             w: getWidth(this.elem),
             h: getHeight(this.elem),
           },
-        }),
+        })
       );
 
       // 反馈坐标信息到外界
@@ -262,20 +274,20 @@ export class Rnd {
 
   // 清除双击选中效果，增加用户体验
   hideUserSelect() {
-    this.elem.style.userSelect = 'none';
+    this.elem.style.userSelect = "none";
   }
 
   createXLine(pos: number) {
-    const xLine = document.createElement('div');
+    const xLine = document.createElement("div");
     setStyle(xLine, {
-      display: 'none',
+      display: "none",
       width: `${window.innerWidth}px`,
-      height: '1px',
+      height: "1px",
       backgroundColor: this.options.color as string,
-      position: 'absolute',
-      top: '0',
-      left: '0',
-      zIndex: '10',
+      position: "absolute",
+      top: "0",
+      left: "0",
+      zIndex: "10",
     });
 
     setPosition(xLine, { x: 0, y: pos });
@@ -284,16 +296,16 @@ export class Rnd {
   }
 
   createYLine(pos: number) {
-    const yLine = document.createElement('div');
+    const yLine = document.createElement("div");
     setStyle(yLine, {
-      display: 'none',
-      width: '1px',
+      display: "none",
+      width: "1px",
       height: `${window.innerHeight}px`,
       backgroundColor: this.options.color as string,
-      position: 'absolute',
-      top: '0',
-      left: '0',
-      zIndex: '10',
+      position: "absolute",
+      top: "0",
+      left: "0",
+      zIndex: "10",
     });
     setPosition(yLine, { x: pos, y: 0 });
     this.bak.elem.appendChild(yLine);
@@ -315,37 +327,37 @@ export class Rnd {
     return {
       vt: {
         pos: rect.y,
-        type: 'V',
+        type: "V",
         box: null,
         instance: this.createXLine(rect.y),
       },
       vm: {
         pos: rect.y + height / 2,
-        type: 'V',
+        type: "V",
         box: null,
         instance: this.createXLine(rect.y + height / 2),
       },
       vb: {
         pos: rect.y + height,
-        type: 'V',
+        type: "V",
         box: null,
         instance: this.createXLine(rect.y + height),
       },
       hl: {
         pos: rect.x,
-        type: 'H',
+        type: "H",
         box: null,
         instance: this.createYLine(rect.x),
       },
       hm: {
         pos: rect.x + width / 2,
-        type: 'H',
+        type: "H",
         box: null,
         instance: this.createYLine(rect.x + width / 2),
       },
       hr: {
         pos: rect.x + width,
-        type: 'H',
+        type: "H",
         box: null,
         instance: this.createYLine(rect.x + width),
       },
@@ -385,7 +397,7 @@ export class Rnd {
     lineT.forEach((l) => {
       const nearLines = this.bak.lines.search(
         (this.box as any)[l],
-        this.options.nearLineDistance as number,
+        this.options.nearLineDistance as number
       );
       searchLines.push(...nearLines);
       this.bak.mayAttachLines[l] = nearLines;
@@ -397,7 +409,7 @@ export class Rnd {
   attach(e: MouseEvent) {
     const showLines = (tLines: Line[]) => {
       tLines.forEach((line) => {
-        if (line) line.instance.style.display = 'block';
+        if (line) line.instance.style.display = "block";
       });
     };
 
@@ -414,20 +426,20 @@ export class Rnd {
       // 过滤掉不在视口中的元素
       this.bak.mayAttachLines[l] = this.bak.mayAttachLines[l]?.filter(
         (line: Line) =>
-          !this.bak.excludeWindowSet.has(line.box?.instance as HTMLElement),
+          !this.bak.excludeWindowSet.has(line.box?.instance as HTMLElement)
       );
       const nearLine = this.bak.mayAttachLines[l]?.length
         ? this.bak.mayAttachLines[l].reduce(
             (pre: any, cur: any) =>
               Math.abs(pre.pos - curLine.pos) < Math.abs(cur.pos - curLine.pos)
                 ? pre
-                : cur,
+                : cur
             // 找出最接近的一条 这里之前写成两个一样的对比，所以出现了 会同时出现两条线的情况
           )
         : null;
       if (nearLine) {
         switch (curLine.type) {
-          case 'H':
+          case "H":
             if (
               !curLineH ||
               Math.abs(nearLine.pos - curLine.pos) <
@@ -437,7 +449,7 @@ export class Rnd {
               nearLineH = nearLine;
             }
             break;
-          case 'V':
+          case "V":
             if (
               !curLineV ||
               Math.abs(nearLine.pos - curLine.pos) <
@@ -463,8 +475,8 @@ export class Rnd {
     showLines([nearLineH ?? undefined, nearLineV ?? undefined]);
 
     // 触发attach事件，交由drag组件进行是否贴合的判断
-    this.eventBus.dispatch('attach', [
-      'attach',
+    this.eventBus.dispatch("attach", [
+      "attach",
       {
         nearLineH: nearLineH?.pos,
         curLineH: curLineH?.pos,
@@ -486,9 +498,9 @@ export class Rnd {
     const pos = getPosition(this.elem);
     const height = getHeight(this.elem);
     const width = getWidth(this.elem);
-    this.elem.setAttribute('x', `${pos.x}`);
-    this.elem.setAttribute('y', `${pos.y}`);
-    this.elem.setAttribute('w', `${width}`);
-    this.elem.setAttribute('h', `${height}`);
+    this.elem.setAttribute("x", `${pos.x}`);
+    this.elem.setAttribute("y", `${pos.y}`);
+    this.elem.setAttribute("w", `${width}`);
+    this.elem.setAttribute("h", `${height}`);
   }
 }

@@ -1,5 +1,5 @@
-import { Rnd } from "./index";
-import { Box, Line } from "./index.d";
+import { Rnd } from './index';
+import { Box, Line } from './index.d';
 
 export function getStyle(elem: HTMLElement, style: any) {
   return (document.defaultView as any).getComputedStyle(elem, false)[style];
@@ -7,15 +7,25 @@ export function getStyle(elem: HTMLElement, style: any) {
 
 export function setStyle(elem: HTMLElement, config: any) {
   Object.keys(config).forEach(
-    (property: string) => (elem.style[property as any] = config[property])
+    (property: string) => (elem.style[property as any] = config[property]),
   );
 }
 
 export function getPosition(elem: HTMLElement) {
+  if (elem.style.transform) {
+    const tempPos = elem.style.transform
+      .slice(10, -1)
+      .split(', ')
+      .map((i) => parseInt(i.slice(0, -2), 10));
+    return {
+      x: tempPos[0],
+      y: tempPos[1],
+    };
+  }
   let pos = { x: 0, y: 0 };
-  const transformValue = getStyle(elem, "transform");
-  if (transformValue === "none") {
-    elem.style.transform = "translate(0, 0)";
+  const transformValue = getStyle(elem, 'transform');
+  if (transformValue === 'none') {
+    elem.style.transform = 'translate(0, 0)';
   } else {
     const temp: any = transformValue.match(/-?\d+/g);
     pos = {
@@ -28,13 +38,13 @@ export function getPosition(elem: HTMLElement) {
 
 export function getWidth(elem: HTMLElement) {
   let width = null;
-  const widthValue = getStyle(elem, "width");
+  const widthValue = getStyle(elem, 'width');
   width = widthValue.match(/-?\d+/g);
   return parseInt(width[0], 10);
 }
 export function getHeight(elem: HTMLElement) {
   let height = null;
-  const heightValue = getStyle(elem, "height");
+  const heightValue = getStyle(elem, 'height');
   height = heightValue.match(/-?\d+/g);
   return parseInt(height[0], 10);
 }
@@ -99,23 +109,23 @@ export function observeContainWindow(cb1: any, cb2: any): IntersectionObserver {
 }
 
 export function buildFakeItem(rnd: Rnd) {
-  const fakeItem = document.createElement("div");
+  const fakeItem = document.createElement('div');
   const layout = correctBounds(
     {
       ...getPosition(rnd.elem),
       w: getWidth(rnd.elem),
       h: getHeight(rnd.elem),
     },
-    rnd
+    rnd,
   );
   setStyle(fakeItem, {
     width: `${layout.w}px`,
     height: `${layout.h}px`,
-    position: "absolute",
+    position: 'absolute',
     left: rnd.elem.style.left,
     top: rnd.elem.style.top,
     backgroundColor: rnd.options.color as string,
-    opacity: "30%",
+    opacity: '30%',
   });
   setPosition(fakeItem, layout);
   rnd.bak.elem.appendChild(fakeItem);
@@ -132,7 +142,7 @@ export function adjustFakeItem(fakeItem: HTMLElement, rnd: Rnd) {
       w: rect.width,
       h: rect.height,
     },
-    rnd
+    rnd,
   );
   fakeItem.style.width = `${layout.w}px`;
   fakeItem.style.height = `${layout.h}px`;
@@ -142,7 +152,7 @@ export function adjustFakeItem(fakeItem: HTMLElement, rnd: Rnd) {
 export function resolveCompactionCollision(containRnds: Rnd[], rnd: Rnd) {
   adjustFakeItem(rnd.fakeItem, rnd);
   const collided = containRnds
-    .map((containRnd) => collides(rnd.fakeItem, containRnd.elem) === "N")
+    .map((containRnd) => collides(rnd.fakeItem, containRnd.elem) === 'N')
     .includes(false);
   if (collided) {
     resolveCollision(containRnds, rnd.fakeItem, rnd);
@@ -152,7 +162,7 @@ export function resolveCompactionCollision(containRnds: Rnd[], rnd: Rnd) {
 export function resolveCollision(
   containRnds: Rnd[],
   item: HTMLElement,
-  draggingRnd: Rnd
+  draggingRnd: Rnd,
 ) {
   let hasD = false;
   let hasU = false;
@@ -161,14 +171,14 @@ export function resolveCollision(
   containRnds.forEach((containRnd) => {
     if (containRnd === draggingRnd) return;
     const collided = collides(item, containRnd.elem);
-    if (collided === "D") hasD = true;
-    else if (collided === "U") {
+    if (collided === 'D') hasD = true;
+    else if (collided === 'U') {
       lowerRnds.push(containRnd);
       hasU = true;
     } else return;
     lowestPoint = Math.max(
       lowestPoint,
-      (containRnd.elem as any).layout.y + getHeight(containRnd.elem) + 1
+      (containRnd.elem as any).layout.y + getHeight(containRnd.elem) + 1,
     );
   });
   // 只要有更高的元素，item就必须被撞下去
@@ -189,32 +199,32 @@ export function resolveCollision(
       resolveCollision(containRnds, rnd.elem, draggingRnd);
 
       rnd.elem.dispatchEvent(
-        new CustomEvent("onLayoutChange", {
+        new CustomEvent('onLayoutChange', {
           detail: {
             e: null,
             ...toBeChangePosition,
             w: getWidth(rnd.elem),
             h: getHeight(rnd.elem),
           },
-        })
+        }),
       );
     });
   }
 }
 
 export function collides(item1: HTMLElement, item2: HTMLElement) {
-  if (item1 === item2) return "N"; // same element
+  if (item1 === item2) return 'N'; // same element
   const l1 = item1.getBoundingClientRect();
   const l2 = item2.getBoundingClientRect();
 
-  if ((item1 as any).layout.x + l1.width <= (item2 as any).layout.x) return "N"; // l1 is left of l2
-  if ((item1 as any).layout.x >= (item2 as any).layout.x + l2.width) return "N"; // l1 is right of l2
+  if ((item1 as any).layout.x + l1.width <= (item2 as any).layout.x) return 'N'; // l1 is left of l2
+  if ((item1 as any).layout.x >= (item2 as any).layout.x + l2.width) return 'N'; // l1 is right of l2
   if ((item1 as any).layout.y + l1.height <= (item2 as any).layout.y)
-    return "N"; // l1 is above l2
+    return 'N'; // l1 is above l2
   if ((item1 as any).layout.y >= (item2 as any).layout.y + l2.height)
-    return "N"; // l1 is below l2
-  if ((item1 as any).layout.y >= (item2 as any).layout.y) return "D";
-  return "U"; // boxes overlap
+    return 'N'; // l1 is below l2
+  if ((item1 as any).layout.y >= (item2 as any).layout.y) return 'D';
+  return 'U'; // boxes overlap
 }
 
 function correctBounds(layout: any, rnd: Rnd): any {
@@ -235,25 +245,25 @@ function correctBounds(layout: any, rnd: Rnd): any {
 
 export function addTransition(rnd: Rnd) {
   setStyle(rnd.elem, {
-    transition: "transform 200ms linear",
-    willChange: "transform",
+    transition: 'transform 200ms linear',
+    willChange: 'transform',
   });
   rnd.resize?.shapes.forEach((shape: HTMLElement) => {
     setStyle(shape, {
-      transition: "transform 200ms linear",
-      willChange: "transform",
+      transition: 'transform 200ms linear',
+      willChange: 'transform',
     });
   });
 }
 
 export function removeTransition(rnd: Rnd) {
   setStyle(rnd.elem, {
-    transition: "none",
-    willChange: "transform",
+    transition: 'none',
+    willChange: 'transform',
   });
   rnd.resize?.shapes.forEach((shape: HTMLElement) => {
     setStyle(shape, {
-      transition: "none",
+      transition: 'none',
     });
   });
 }
